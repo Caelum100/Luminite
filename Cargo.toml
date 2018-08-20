@@ -1,0 +1,6 @@
+[package]
+name = "luminite"
+version = "0.1.0"
+authors = ["Caelum100 <caelum12321@gmail.com>, JFent10 <jfent10@gmail.com>"]
+
+[dependencies]
