@@ -2,5 +2,36 @@
 name = "luminite"
 version = "0.1.0"
 authors = ["Caelum100 <caelum12321@gmail.com>, JFent10 <jfent10@gmail.com>"]
+license-file = "LICENSE.md"
 
 [dependencies]
+winit = "0.17.2"
+glm = "0.2.3"
+
+[features]
+default = ["vulkan"]
+vulkan = ["gfx-backend-vulkan"]
+dx12 = ["gfx-backend-dx12"]
+metal = ["gfx-backend-metal"]
+
+[dependencies.gfx-hal]
+git = "https://github.com/gfx-rs/gfx"
+rev = "16feb392"
+
+[dependencies.gfx-backend-vulkan]
+git = "https://github.com/gfx-rs/gfx"
+rev = "16feb392"
+optional = true
+
+[target.'cfg(windows)'.dependencies.gfx-backend-dx12]
+git = "https://github.com/gfx-rs/gfx"
+rev = "16feb392"
+optional = true
+
+[target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
+git = "https://github.com/gfx-rs/gfx"
+rev = "16feb392"
+optional = true
+
+[build-dependencies]
+glsl-to-spirv = "0.1.6"
