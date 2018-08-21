@@ -5,16 +5,20 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-out vec4 target;
+layout (location = 0) out vec4 target;
 
-in vec3 v_position;
-in vec3 v_normal;
+layout (location = 0) in vec3 v_position;
+layout (location = 1) in vec3 v_normal;
 
-uniform vec3 light_pos;
+uniform LightBlock {
+    vec3 light_pos;
+};
 
-uniform vec3 diffuse_color;
-uniform vec3 ambient_color;
-uniform vec3 specular_color;
+uniform MaterialBlock {
+    vec3 diffuse_color;
+    vec3 ambient_color;
+    vec3 specular_color;
+};
 
 /*const vec3 ambient_color = vec3(0.2, 0.0, 0.0);
 const vec3 diffuse_color = vec3(0.6, 0.0, 0.0);
@@ -27,5 +31,5 @@ void main() {
     vec3 half_direction = normalize(normalize(light_pos) + camera_dir);
     float specular = pow(max(dot(half_direction, normalize(v_normal)), 0.0), 16.0);
 
-    color = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
+    target = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
 }
