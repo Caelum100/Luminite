@@ -1,6 +1,6 @@
 /*
 * Vertex shader using an MVP matrix
-* to calculate vertex positions
+* to calculate vertex positions.
 * This is the default shader for all models.
 */
 #version 450

@@ -1,5 +1,5 @@
 /*
-* Basic Blinn-Phong shading using material attributes
+* Basic Blinn-Phong shading using material attributes.
 * This is the default shader for all models.
 * TODO textures
 */
@@ -15,15 +15,9 @@ uniform LightBlock {
     vec3 light_dir;
 };
 
-uniform MaterialBlock {
-    vec3 diffuse_color;
-    vec3 ambient_color;
-    vec3 specular_color;
-};
-
-/*const vec3 ambient_color = vec3(0.2, 0.0, 0.0);
-const vec3 diffuse_color = vec3(0.6, 0.0, 0.0);
-const vec3 specular_color = vec3(1.0, 1.0, 1.0);*/
+const vec3 ambient_color = vec3(0.4, 0.4, 0.4);
+const vec3 diffuse_color = vec3(0.8, 0.8, 0.8); // Light grey
+const vec3 specular_color = vec3(1.0, 1.0, 1.0);
 
 void main() {
     vec3 light_dir_normalized = normalize(light_dir);
