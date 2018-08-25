@@ -20,6 +20,7 @@ pub struct RenderContext<B: Backend> {
     pub render_pass: B::RenderPass,
     /// The default graphics pipeline, which includes vertex and fragment shaders
     pub pipeline: B::GraphicsPipeline,
+    pub pipeline_layout: B::PipelineLayout,
     /// The swapchain
     pub swapchain: B::Swapchain,
     /// Image views

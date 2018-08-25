@@ -129,12 +129,12 @@ impl<'a> RenderBuilder<'a, back::Backend> {
 
     fn build_device_and_queue_group_and_surface(&mut self) {
         self.surface =
-            Some(self.instance.as_mut().unwrap().create_surface(&self.window.as_mut().unwrap()));
+            Some(self.instance.as_ref().unwrap().create_surface(self.window.as_ref().unwrap()));
 
         let (device, queue_group) = {
             let mut adapter = self.instance.as_mut().unwrap().enumerate_adapters()
                 .remove(0);
-            let surface = &self.surface.as_mut().unwrap();
+            let surface = self.surface.as_mut().unwrap();
             let (device, queue_group) = adapter
                 .open_with::<_, Graphics>(
                     1,
@@ -169,7 +169,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             Some(winit::WindowBuilder::new()
                 .with_title(self.title)
                 .with_dimensions(self.dimensions.into())
-                .build(&self.events_loop.as_ref().unwrap()).unwrap());
+                .build(self.events_loop.as_ref().unwrap()).unwrap());
     }
 
     fn build_command_pool(&mut self) {
@@ -275,6 +275,9 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 .unwrap()
         };
 
+        self.device.as_ref().unwrap().destroy_shader_module(vertex_shader_mod);
+        self.device.as_ref().unwrap().destroy_shader_module(fragment_shader_mod);
+
         // Swapchain
         let swapchain_config = SwapchainConfig::from_caps(
             self.caps.as_ref().unwrap(),
@@ -339,6 +342,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             command_pool: self.command_pool.unwrap(),
             render_pass: self.render_pass.unwrap(),
             pipeline,
+            pipeline_layout,
             swapchain,
             image_views,
             frame_buffers,

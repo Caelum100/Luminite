@@ -12,22 +12,26 @@ extern crate gfx_hal;
 
 pub use glm::*;
 use winit::{Event, WindowEvent};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub mod render;
 
-struct Game {
-    render: render::context::RenderContext<back::Backend>,
-    running: bool,
+pub struct Game {
+    pub render: render::context::RenderContext<back::Backend>,
+    pub running: bool,
 }
 
+
 fn main() {
-    println!("Starting Luminite...");
     let mut game = Game {
         render: render::create_context(),
         running: true,
     };
 
     main_loop(&mut game);
+    render::destroy(game.render);
+    std::process::exit(0);
 }
 
 fn main_loop(game: &mut Game) {
@@ -38,16 +42,23 @@ fn main_loop(game: &mut Game) {
 }
 
 fn poll_events(game: &mut Game) {
-    let events_loop = &mut game.render.events_loop;
-    let mut running = true;
-    events_loop.poll_events(move |event| {
-        match event {
-            Event::WindowEvent { event, .. } => match event {
-                WindowEvent::CloseRequested => running = false,
+    // Yes, yes, very unsafe. There was a weird issue
+    // with variables not being mutated, so I'm just
+    // going to use raw pointers.
+    unsafe {
+        let running_ptr = &mut std::mem::zeroed::<bool>() as *mut bool;
+        *running_ptr = true;
+        let events_loop = &mut game.render.events_loop;
+        events_loop.poll_events(|event| {
+            match event {
+                Event::WindowEvent { event, .. } => match event {
+                    WindowEvent::CloseRequested => *running_ptr = false,
+                    _ => (),
+                }
                 _ => (),
             }
-            _ => (),
-        }
-    });
-    game.running = running;
+        });
+        game.running = *running_ptr;
+    }
 }
+

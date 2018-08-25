@@ -114,6 +114,31 @@ pub fn render(ctx: &mut RenderContext<back::Backend>) {
         .unwrap();
 }
 
+/// Destroys the RenderContext.
+pub fn destroy(ctx: RenderContext<back::Backend>) {
+    let device = ctx.device;
+
+    device.destroy_graphics_pipeline(ctx.pipeline);
+    device.destroy_pipeline_layout(ctx.pipeline_layout);
+
+    for framebuffer in ctx.frame_buffers {
+        device.destroy_framebuffer(framebuffer);
+    }
+
+    for image_view in ctx.image_views {
+        device.destroy_image_view(image_view);
+    }
+
+    device.destroy_render_pass(ctx.render_pass);
+    device.destroy_swapchain(ctx.swapchain);
+
+    device.destroy_command_pool(ctx.command_pool.into_raw());
+    device.destroy_fence(ctx.frame_fence);
+    device.destroy_semaphore(ctx.frame_semaphore);
+
+    // TODO - descriptors
+}
+
 fn viewport(extent: &Extent) -> Viewport {
     Viewport {
         rect: Rect {
