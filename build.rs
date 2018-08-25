@@ -41,7 +41,8 @@ fn main() -> Result<(), Box<Error>> {
 
                 let out_path = format!(
                     "{}/{}.spv",
-                    DEST_LOC, in_path.file_name().unwrap().to_string_lossy()
+                    DEST_LOC,
+                    in_path.file_name().unwrap().to_string_lossy()
                 );
 
                 std::fs::write(&out_path, &compiled_bytes)?;

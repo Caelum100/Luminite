@@ -26,7 +26,7 @@ const vec3 diffuse_color = vec3(0.6, 0.0, 0.0);
 const vec3 specular_color = vec3(1.0, 1.0, 1.0);*/
 
 void main() {
-    vec3 light_dir_normalized = normalize(light_pos);
+    vec3 light_dir_normalized = normalize(light_dir);
     vec3 v_normal_normalized = normalize(v_normal);
     float diffuse = max(dot(v_normal_normalized, light_dir_normalized), 0.0);
 

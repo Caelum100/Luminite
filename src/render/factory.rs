@@ -80,8 +80,7 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
 
 impl<'a> RenderBuilder<'a, back::Backend> {
     /// Creates a new RenderBuilder.
-    pub fn new()
-        -> RenderBuilder<'a, back::Backend> {
+    pub fn new() -> RenderBuilder<'a, back::Backend> {
         RenderBuilder {
             ..Default::default()
         }
@@ -128,32 +127,42 @@ impl<'a> RenderBuilder<'a, back::Backend> {
     }
 
     fn build_device_and_queue_group_and_surface(&mut self) {
-        self.surface =
-            Some(self.instance.as_ref().unwrap().create_surface(self.window.as_ref().unwrap()));
+        self.surface = Some(
+            self.instance
+                .as_ref()
+                .unwrap()
+                .create_surface(self.window.as_ref().unwrap()),
+        );
 
         let (device, queue_group) = {
-            let mut adapter = self.instance.as_mut().unwrap().enumerate_adapters()
+            let mut adapter = self.instance
+                .as_mut()
+                .unwrap()
+                .enumerate_adapters()
                 .remove(0);
             let surface = self.surface.as_mut().unwrap();
             let (device, queue_group) = adapter
-                .open_with::<_, Graphics>(
-                    1,
-                    |family| surface.supports_queue_family(family)).unwrap();
+                .open_with::<_, Graphics>(1, |family| surface.supports_queue_family(family))
+                .unwrap();
             self.adapter = Some(adapter);
             (device, queue_group)
         };
         let physical_device = &self.adapter.as_mut().unwrap().physical_device;
-        let (caps, formats, _) =
-            self.surface.as_mut().unwrap().compatibility(physical_device);
+        let (caps, formats, _) = self.surface
+            .as_mut()
+            .unwrap()
+            .compatibility(physical_device);
         self.caps = Some(caps);
 
         self.surface_color_format = {
             // Pick color format
             match formats {
-                Some(choices) => Some(choices
-                    .into_iter()
-                    .find(|format| format.base_format().1 == ChannelType::Srgb)
-                    .unwrap()),
+                Some(choices) => Some(
+                    choices
+                        .into_iter()
+                        .find(|format| format.base_format().1 == ChannelType::Srgb)
+                        .unwrap(),
+                ),
                 None => Some(Format::Rgba8Srgb),
             }
         };
@@ -163,13 +172,14 @@ impl<'a> RenderBuilder<'a, back::Backend> {
     }
 
     fn build_window_and_events_loop(&mut self) {
-        self.events_loop =
-            Some(winit::EventsLoop::new());
-        self.window =
-            Some(winit::WindowBuilder::new()
+        self.events_loop = Some(winit::EventsLoop::new());
+        self.window = Some(
+            winit::WindowBuilder::new()
                 .with_title(self.title)
                 .with_dimensions(self.dimensions.into())
-                .build(self.events_loop.as_ref().unwrap()).unwrap());
+                .build(self.events_loop.as_ref().unwrap())
+                .unwrap(),
+        );
     }
 
     fn build_command_pool(&mut self) {
@@ -202,7 +212,8 @@ impl<'a> RenderBuilder<'a, back::Backend> {
 
             let dependency = SubpassDependency {
                 passes: SubpassRef::External..SubpassRef::Pass(0),
-                stages: PipelineStage::COLOR_ATTACHMENT_OUTPUT..PipelineStage::COLOR_ATTACHMENT_OUTPUT,
+                stages: PipelineStage::COLOR_ATTACHMENT_OUTPUT
+                    ..PipelineStage::COLOR_ATTACHMENT_OUTPUT,
                 accesses: Access::empty()
                     ..(Access::COLOR_ATTACHMENT_READ | Access::COLOR_ATTACHMENT_WRITE),
             };
@@ -217,14 +228,15 @@ impl<'a> RenderBuilder<'a, back::Backend> {
     }
 
     fn finish(mut self) -> RenderContext<back::Backend> {
-        let set_layout = self.device.as_ref().unwrap()
+        let set_layout = self.device
+            .as_ref()
+            .unwrap()
             .create_descriptor_set_layout(self.pipeline_layout, &[]);
 
-        let pipeline_layout = self.device.as_ref().unwrap()
-            .create_pipeline_layout(
-                vec!(&set_layout),
-                &[],
-            );
+        let pipeline_layout = self.device
+            .as_ref()
+            .unwrap()
+            .create_pipeline_layout(vec![&set_layout], &[]);
 
         let vertex_shader_mod =
             create_shader::<back::Backend>(self.vertex_shader, self.device.as_ref().unwrap());
@@ -270,23 +282,35 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 .targets
                 .push(ColorBlendDesc(ColorMask::ALL, BlendState::ALPHA));
 
-            self.device.as_ref().unwrap()
+            self.device
+                .as_ref()
+                .unwrap()
                 .create_graphics_pipeline(&pipeline_desc, None)
                 .unwrap()
         };
 
-        self.device.as_ref().unwrap().destroy_shader_module(vertex_shader_mod);
-        self.device.as_ref().unwrap().destroy_shader_module(fragment_shader_mod);
+        self.device
+            .as_ref()
+            .unwrap()
+            .destroy_shader_module(vertex_shader_mod);
+        self.device
+            .as_ref()
+            .unwrap()
+            .destroy_shader_module(fragment_shader_mod);
 
         // Swapchain
         let swapchain_config = SwapchainConfig::from_caps(
             self.caps.as_ref().unwrap(),
-            self.surface_color_format.unwrap());
+            self.surface_color_format.unwrap(),
+        );
         let extent = swapchain_config.extent.to_extent();
 
         let surface_color_format = self.surface_color_format.unwrap();
-        let (swapchain, backbuffer) = self.device.as_ref().unwrap()
-            .create_swapchain(self.surface.as_mut().unwrap(), swapchain_config, None);
+        let (swapchain, backbuffer) = self.device.as_ref().unwrap().create_swapchain(
+            self.surface.as_mut().unwrap(),
+            swapchain_config,
+            None,
+        );
 
         // Create image views and frame buffers
         let (image_views, frame_buffers) = match backbuffer {
@@ -300,7 +324,9 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 let image_views = images
                     .iter()
                     .map(|image| {
-                        self.device.as_ref().unwrap()
+                        self.device
+                            .as_ref()
+                            .unwrap()
                             .create_image_view(
                                 image,
                                 ViewKind::D2,
@@ -315,9 +341,14 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 let _frame_buffers = image_views
                     .iter()
                     .map(|image_view| {
-                        self.device.as_ref().unwrap()
-                            .create_framebuffer(self.render_pass.as_ref().unwrap(),
-                                                vec![image_view], extent)
+                        self.device
+                            .as_ref()
+                            .unwrap()
+                            .create_framebuffer(
+                                self.render_pass.as_ref().unwrap(),
+                                vec![image_view],
+                                extent,
+                            )
                             .unwrap()
                     })
                     .collect();

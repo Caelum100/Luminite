@@ -11,9 +11,9 @@ extern crate gfx_backend_vulkan as back;
 extern crate gfx_hal;
 
 pub use glm::*;
-use winit::{Event, WindowEvent};
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
+use winit::{Event, WindowEvent};
 
 pub mod render;
 
@@ -21,7 +21,6 @@ pub struct Game {
     pub render: render::context::RenderContext<back::Backend>,
     pub running: bool,
 }
-
 
 fn main() {
     let mut game = Game {
@@ -48,16 +47,13 @@ fn poll_events(game: &mut Game) {
         let running_ptr = &mut std::mem::zeroed::<bool>() as *mut bool;
         *running_ptr = true;
         let events_loop = &mut game.render.events_loop;
-        events_loop.poll_events(|event| {
-            match event {
-                Event::WindowEvent { event, .. } => match event {
-                    WindowEvent::CloseRequested => *running_ptr = false,
-                    _ => (),
-                }
+        events_loop.poll_events(|event| match event {
+            Event::WindowEvent { event, .. } => match event {
+                WindowEvent::CloseRequested => *running_ptr = false,
                 _ => (),
-            }
+            },
+            _ => (),
         });
         game.running = *running_ptr;
     }
 }
-
