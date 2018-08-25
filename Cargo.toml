@@ -16,21 +16,21 @@ metal = ["gfx-backend-metal"]
 
 [dependencies.gfx-hal]
 git = "https://github.com/gfx-rs/gfx"
-rev = "16feb392"
+rev = "c7eeecb"
 
 [dependencies.gfx-backend-vulkan]
 git = "https://github.com/gfx-rs/gfx"
-rev = "16feb392"
+rev = "c7eeecb"
 optional = true
 
 [target.'cfg(windows)'.dependencies.gfx-backend-dx12]
 git = "https://github.com/gfx-rs/gfx"
-rev = "16feb392"
+rev = "c7eeecb"
 optional = true
 
 [target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
 git = "https://github.com/gfx-rs/gfx"
-rev = "16feb392"
+rev = "c7eeecb"
 optional = true
 
 [build-dependencies]
