@@ -14,6 +14,16 @@ pub use glm::*;
 
 pub mod render;
 
+struct Game {
+    render: render::context::RenderContext<back::Backend>,
+}
+
 fn main() {
     println!("Starting Luminite...");
+
+
+}
+
+fn main_loop(game: &mut Game) {
+
 }

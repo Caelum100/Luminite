@@ -33,6 +33,7 @@ pub struct RenderBuilder<'a, B: Backend> {
     /// Fence to wait for draw calls to finish
     frame_fence: Option<B::Fence>,
     /// Raw vertex shader
+    /// TODO multiple pipelines/shaders
     vertex_shader: &'a [u8],
     /// Raw fragment shader
     fragment_shader: &'a [u8],
@@ -40,6 +41,7 @@ pub struct RenderBuilder<'a, B: Backend> {
     title: &'a str,
     /// Dimensions of window
     dimensions: (u32, u32),
+    pipeline_layout: &'a [DescriptorSetLayoutBinding],
     /// Surface's color format
     surface_color_format: Option<Format>,
     adapter: Option<gfx_hal::Adapter<B>>,
@@ -63,6 +65,7 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
             frame_buffers: None,
             frame_semaphore: None,
             frame_fence: None,
+            // TODO allow for more shaders
             vertex_shader: &[],
             fragment_shader: &[],
             title: "",
@@ -70,6 +73,7 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
             surface_color_format: None,
             adapter: None,
             caps: None,
+            pipeline_layout: &[],
         }
     }
 }
@@ -83,20 +87,29 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         }
     }
 
-    pub fn with_vertex_shader(&mut self, vertex_shader: &'a [u8]) {
-        self.vertex_shader = vertex_shader;
-    }
-
-    pub fn with_fragment_shader(&mut self, fragment_shader: &'a [u8]) {
-        self.fragment_shader = fragment_shader;
-    }
-
-    pub fn with_title(&mut self, title: &'a str) {
+    pub fn with_title(mut self, title: &'a str) -> Self {
         self.title = title;
+        self
     }
 
-    pub fn with_dimensions(&mut self, dimensions: (u32, u32)) {
+    pub fn with_dimensions(mut self, dimensions: (u32, u32)) -> Self {
         self.dimensions = dimensions;
+        self
+    }
+
+    pub fn with_vertex_shader(mut self, vertex_shader: &'a [u8]) -> Self {
+        self.vertex_shader = vertex_shader;
+        self
+    }
+
+    pub fn with_fragment_shader(mut self, fragment_shader: &'a [u8]) -> Self {
+        self.fragment_shader = fragment_shader;
+        self
+    }
+
+    pub fn with_pipeline(mut self, desc: &'a [DescriptorSetLayoutBinding]) -> Self {
+        self.pipeline_layout = desc;
+        self
     }
 
     /// Builds a RenderContext, initializing all values and
@@ -204,10 +217,12 @@ impl<'a> RenderBuilder<'a, back::Backend> {
     }
 
     fn finish(mut self) -> RenderContext<back::Backend> {
-        // No uniforms just yet
+        let set_layout = self.device.as_ref().unwrap()
+            .create_descriptor_set_layout(self.pipeline_layout, &[]);
+
         let pipeline_layout = self.device.as_ref().unwrap()
             .create_pipeline_layout(
-                &[],
+                vec!(&set_layout),
                 &[],
             );
 
