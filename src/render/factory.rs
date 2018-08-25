@@ -33,7 +33,7 @@ pub struct RenderBuilder<'a, B: Backend> {
     /// Fence to wait for draw calls to finish
     frame_fence: Option<B::Fence>,
     /// Raw vertex shader
-    /// TODO multiple pipelines/shaders
+    // TODO multiple pipelines/shaders
     vertex_shader: &'a [u8],
     /// Raw fragment shader
     fragment_shader: &'a [u8],
@@ -46,6 +46,8 @@ pub struct RenderBuilder<'a, B: Backend> {
     surface_color_format: Option<Format>,
     adapter: Option<gfx_hal::Adapter<B>>,
     caps: Option<gfx_hal::SurfaceCapabilities>,
+    vertex_desc: Option<VertexBufferDesc>,
+    attr_descs: Vec<AttributeDesc>,
 }
 
 impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
@@ -74,6 +76,8 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
             adapter: None,
             caps: None,
             pipeline_layout: &[],
+            vertex_desc: None,
+            attr_descs: vec![],
         }
     }
 }
@@ -108,6 +112,16 @@ impl<'a> RenderBuilder<'a, back::Backend> {
 
     pub fn with_pipeline(mut self, desc: &'a [DescriptorSetLayoutBinding]) -> Self {
         self.pipeline_layout = desc;
+        self
+    }
+
+    pub fn with_vertex_attr(
+        mut self,
+        vertex_desc: VertexBufferDesc,
+        attr_descs: Vec<AttributeDesc>,
+    ) -> Self {
+        self.vertex_desc = Some(vertex_desc);
+        self.attr_descs = attr_descs;
         self
     }
 
@@ -281,6 +295,15 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 .blender
                 .targets
                 .push(ColorBlendDesc(ColorMask::ALL, BlendState::ALPHA));
+
+            // Vertex buffers
+            if let Some(vertex_desc) = self.vertex_desc {
+                pipeline_desc.vertex_buffers.push(vertex_desc);
+
+                for attr_desc in self.attr_descs.clone() {
+                    pipeline_desc.attributes.push(attr_desc);
+                }
+            }
 
             self.device
                 .as_ref()

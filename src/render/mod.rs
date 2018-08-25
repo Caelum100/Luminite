@@ -4,29 +4,36 @@ use super::back;
 use super::winit;
 use super::*;
 use gfx_hal::{
-    command::{ClearColor, ClearValue}, format::{Aspects, ChannelType, Format, Swizzle},
+    buffer::Usage, command::{ClearColor, ClearValue},
+    format::{Aspects, ChannelType, Format, Swizzle},
     image::{Access, Extent, Layout, SubresourceRange, ViewKind},
+    memory::{Barrier, Dependencies, Properties},
     pass::{
         Attachment, AttachmentLoadOp, AttachmentOps, AttachmentStoreOp, Subpass, SubpassDependency,
         SubpassDesc, SubpassRef,
     },
     pool::{CommandPool, CommandPoolCreateFlags},
     pso::{
+        AttributeDesc, DescriptorSetLayoutBinding, DescriptorType, Element, ShaderStageFlags,
+        VertexBufferDesc,
+    },
+    pso::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
         PipelineStage, Rasterizer, Rect, Viewport,
     },
-    pso::{DescriptorSetLayoutBinding, DescriptorType, ShaderStageFlags}, Backbuffer, Backend,
-    Device, FrameSync, Graphics, Instance, Primitive, QueueGroup, Submission, Surface,
-    SwapImageIndex, Swapchain, SwapchainConfig,
+    Backbuffer, Backend, Device, FrameSync, Graphics, Instance, MemoryType, Primitive, QueueGroup,
+    Submission, Surface, SwapImageIndex, Swapchain, SwapchainConfig,
 };
 
 use std::borrow::Borrow;
 
+pub mod buffer_util;
 pub mod context;
 pub mod factory;
 
 /// A three-dimensional vertex
 /// with a normal.
+#[repr(C)]
 pub struct Vertex {
     pub position: Vec3,
     pub normal: Vec3,
@@ -48,10 +55,36 @@ pub fn create_context() -> RenderContext<back::Backend> {
         stage_flags: ShaderStageFlags::VERTEX,
         immutable_samplers: false,
     }];
+
+    let vertex_desc = VertexBufferDesc {
+        binding: 0,
+        stride: std::mem::size_of::<Vertex>() as u32,
+        rate: 0,
+    };
+
+    let position_attr = AttributeDesc {
+        location: 0,
+        binding: 0,
+        element: Element {
+            format: Format::Rgb32Float,
+            offset: 0,
+        },
+    };
+
+    let normal_attr = AttributeDesc {
+        location: 1,
+        binding: 0,
+        element: Element {
+            format: Format::Rgb32Float,
+            offset: 12,
+        },
+    };
+
     let builder = RenderBuilder::new()
         .with_title("Luminite")
         .with_vertex_shader(include_bytes!("../../assets/shaders/model.vert.spv"))
-        .with_fragment_shader(include_bytes!("../../assets/shaders/model.frag.spv"));
+        .with_fragment_shader(include_bytes!("../../assets/shaders/model.frag.spv"))
+        .with_vertex_attr(vertex_desc, vec![position_attr, normal_attr]);
 
     builder.build()
 }
