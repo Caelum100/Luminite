@@ -11,9 +11,7 @@ extern crate gfx_backend_vulkan as back;
 extern crate gfx_hal;
 
 pub use glm::*;
-use winit::{Event, WindowEvent, VirtualKeyCode, KeyboardInput};
-use std::rc::Rc;
-use std::cell::RefCell;
+use winit::{Event, WindowEvent};
 
 pub mod render;
 

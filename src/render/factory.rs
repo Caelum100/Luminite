@@ -169,7 +169,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             Some(winit::WindowBuilder::new()
                 .with_title(self.title)
                 .with_dimensions(self.dimensions.into())
-                .build(&self.events_loop.as_mut().unwrap()).unwrap());
+                .build(&self.events_loop.as_ref().unwrap()).unwrap());
     }
 
     fn build_command_pool(&mut self) {
@@ -344,6 +344,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             frame_buffers,
             frame_semaphore,
             frame_fence,
+            extent,
         }
     }
 }

@@ -30,4 +30,5 @@ pub struct RenderContext<B: Backend> {
     pub frame_semaphore: B::Semaphore,
     /// Fence to wait for draw calls to finish
     pub frame_fence: B::Fence,
+    pub extent: Extent,
 }
