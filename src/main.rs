@@ -20,10 +20,16 @@ struct Game {
 
 fn main() {
     println!("Starting Luminite...");
+    let mut game = Game {
+        render: render::create_context(),
+    };
 
-
+    main_loop(&mut game);
 }
 
 fn main_loop(game: &mut Game) {
+    let mut running = true;
+    while running {
 
+    }
 }

@@ -12,7 +12,7 @@ use gfx_hal::{
     }, pool::{CommandPool, CommandPoolCreateFlags}, Primitive, pso::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
         PipelineStage, Rasterizer, Rect, Viewport,
-    }, pso::{DescriptorSetLayoutBinding},
+    }, pso::{DescriptorSetLayoutBinding, DescriptorType, ShaderStageFlags},
     Surface, Swapchain, SwapchainConfig, SwapImageIndex, QueueGroup
 };
 use self::context::RenderContext;
@@ -32,7 +32,24 @@ pub struct Vertex {
     pub normal: Vec3,
 }
 
+/// Uniform
+struct MatrixBlock {
+    /// The full MVP matrix
+    matrix: Mat4,
+    /// The model and view matrices multiplied together
+    modelview: Mat4,
+}
+
 pub fn create_context() -> RenderContext<back::Backend> {
+    let pipeline_layout = [
+        DescriptorSetLayoutBinding {
+            binding: 0,
+            ty: DescriptorType::UniformBuffer,
+            count: 1,
+            stage_flags: ShaderStageFlags::VERTEX,
+            immutable_samplers: false,
+        }
+    ];
     let builder = RenderBuilder::new()
         .with_title("Luminite: Light of Life in Darkness")
         .with_vertex_shader(include_bytes!("../../assets/shaders/model.vert.spv"))
@@ -41,3 +58,9 @@ pub fn create_context() -> RenderContext<back::Backend> {
     builder.build()
 }
 
+pub fn render(ctx: &mut RenderContext<back::Backend>) {
+    let device = &mut ctx.device;
+    let swapchain = &mut ctx.swapchain;
+    let image_views = &mut ctx.image_views;
+    let frame_buffers = &mut ctx.frame_buffers;
+}
