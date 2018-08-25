@@ -51,7 +51,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
         }
     ];
     let builder = RenderBuilder::new()
-        .with_title("Luminite: Light of Life in Darkness")
+        .with_title("Luminite")
         .with_vertex_shader(include_bytes!("../../assets/shaders/model.vert.spv"))
         .with_fragment_shader(include_bytes!("../../assets/shaders/model.frag.spv"));
 
