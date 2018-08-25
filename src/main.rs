@@ -31,7 +31,6 @@ fn main() {
 
     main_loop(&mut game);
     render::destroy(game.render);
-    std::process::exit(0);
 }
 
 fn main_loop(game: &mut Game) {
