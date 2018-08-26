@@ -17,11 +17,14 @@ pub use glm::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use winit::{Event, WindowEvent};
+use world::World;
 
 pub mod render;
+pub mod world;
 
 pub struct Game {
     pub render: render::context::RenderContext<back::Backend>,
+    pub world: World,
     pub running: bool,
 }
 
@@ -29,6 +32,7 @@ fn main() {
     simple_logger::init().unwrap();
     let mut game = Game {
         render: render::create_context(),
+        world: World::new(),
         running: true,
     };
 
@@ -38,12 +42,12 @@ fn main() {
 fn main_loop(game: &mut Game) {
     while game.running {
         poll_events(game);
-        render::render(&mut game.render);
+        render::render(&mut game.render, &game.world);
     }
 }
 
 /// Polls events
-fn poll_events(game: &mut Game)  {
+fn poll_events(game: &mut Game) {
     let mut running = true;
     let events_loop = &mut game.render.events_loop;
     events_loop.poll_events(|event| match event {

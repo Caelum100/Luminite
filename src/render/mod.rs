@@ -4,7 +4,8 @@ use super::back;
 use super::winit;
 use super::*;
 use gfx_hal::{
-    buffer::Usage, command::{ClearColor, ClearValue},
+    buffer::Usage,
+    command::{ClearColor, ClearValue},
     format::{Aspects, ChannelType, Format, Swizzle},
     image::{Access, Extent, Layout, SubresourceRange, ViewKind},
     memory::{Barrier, Dependencies, Properties},
@@ -88,7 +89,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
     builder.build()
 }
 
-pub fn render(ctx: &mut RenderContext<back::Backend>) {
+pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
     let device = &mut ctx.device;
     let swapchain = &mut ctx.swapchain;
     let image_views = &mut ctx.image_views;

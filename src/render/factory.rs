@@ -149,7 +149,8 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         );
 
         let (device, queue_group) = {
-            let mut adapter = self.instance
+            let mut adapter = self
+                .instance
                 .as_mut()
                 .unwrap()
                 .enumerate_adapters()
@@ -162,7 +163,8 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             (device, queue_group)
         };
         let physical_device = &self.adapter.as_mut().unwrap().physical_device;
-        let (caps, formats, _) = self.surface
+        let (caps, formats, _) = self
+            .surface
             .as_mut()
             .unwrap()
             .compatibility(physical_device);
@@ -242,12 +244,14 @@ impl<'a> RenderBuilder<'a, back::Backend> {
     }
 
     fn finish(mut self) -> RenderContext<back::Backend> {
-        let set_layout = self.device
+        let set_layout = self
+            .device
             .as_ref()
             .unwrap()
             .create_descriptor_set_layout(self.pipeline_layout, &[]);
 
-        let pipeline_layout = self.device
+        let pipeline_layout = self
+            .device
             .as_ref()
             .unwrap()
             .create_pipeline_layout(vec![&set_layout], &[]);
