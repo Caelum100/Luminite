@@ -101,7 +101,7 @@ pub fn render(ctx: &mut RenderContext<back::Backend>) {
     command_pool.reset();
 
     let frame_index: SwapImageIndex = swapchain
-        .acquire_image(FrameSync::Semaphore(frame_semaphore))
+        .acquire_image(0, FrameSync::Semaphore(frame_semaphore))
         .unwrap();
 
     let finished_command_buffer = {
