@@ -33,7 +33,6 @@ fn main() {
     };
 
     main_loop(&mut game);
-    render::destroy(game.render);
 }
 
 fn main_loop(game: &mut Game) {
@@ -43,20 +42,16 @@ fn main_loop(game: &mut Game) {
     }
 }
 
-fn poll_events(game: &mut Game) {
-    // Yes, yes, very unsafe. There was a weird issue
-    // with variables not being mutated, so I'm just
-    // going to use raw pointers.
-    unsafe {
-        let running_ptr = &mut true as *mut bool;
-        let events_loop = &mut game.render.events_loop;
-        events_loop.poll_events(|event| match event {
-            Event::WindowEvent { event, .. } => match event {
-                WindowEvent::CloseRequested => *running_ptr = false,
-                _ => (),
-            },
+/// Polls events
+fn poll_events(game: &mut Game)  {
+    let mut running = true;
+    let events_loop = &mut game.render.events_loop;
+    events_loop.poll_events(|event| match event {
+        Event::WindowEvent { event, .. } => match event {
+            WindowEvent::CloseRequested => running = false,
             _ => (),
-        });
-        game.running = *running_ptr;
-    }
+        },
+        _ => (),
+    });
+    game.running = running;
 }

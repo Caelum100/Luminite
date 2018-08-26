@@ -32,19 +32,17 @@ pub mod context;
 pub mod factory;
 
 /// A three-dimensional vertex
-/// with a normal.
+/// with a color.
 #[repr(C)]
 pub struct Vertex {
     pub position: Vec3,
-    pub normal: Vec3,
+    pub color: Vec3,
 }
 
 /// Uniform
 struct MatrixBlock {
     /// The full MVP matrix
     matrix: Mat4,
-    /// The model and view matrices multiplied together
-    modelview: Mat4,
 }
 
 pub fn create_context() -> RenderContext<back::Backend> {
@@ -71,7 +69,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
         },
     };
 
-    let normal_attr = AttributeDesc {
+    let color_attr = AttributeDesc {
         location: 1,
         binding: 0,
         element: Element {
@@ -84,7 +82,8 @@ pub fn create_context() -> RenderContext<back::Backend> {
         .with_title("Luminite")
         .with_vertex_shader(include_bytes!("../../assets/shaders/model.vert.spv"))
         .with_fragment_shader(include_bytes!("../../assets/shaders/model.frag.spv"))
-        .with_vertex_attr(vertex_desc, vec![position_attr, normal_attr]);
+        .with_pipeline(&pipeline_layout)
+        .with_vertex_attr(vertex_desc, vec![position_attr, color_attr]);
 
     builder.build()
 }
