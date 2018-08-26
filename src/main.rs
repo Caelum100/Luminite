@@ -1,5 +1,8 @@
 extern crate glm;
 extern crate winit;
+#[macro_use]
+extern crate log;
+extern crate simple_logger;
 
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;
@@ -23,6 +26,7 @@ pub struct Game {
 }
 
 fn main() {
+    simple_logger::init().unwrap();
     let mut game = Game {
         render: render::create_context(),
         running: true,
@@ -44,8 +48,7 @@ fn poll_events(game: &mut Game) {
     // with variables not being mutated, so I'm just
     // going to use raw pointers.
     unsafe {
-        let running_ptr = &mut std::mem::zeroed::<bool>() as *mut bool;
-        *running_ptr = true;
+        let running_ptr = &mut true as *mut bool;
         let events_loop = &mut game.render.events_loop;
         events_loop.poll_events(|event| match event {
             Event::WindowEvent { event, .. } => match event {

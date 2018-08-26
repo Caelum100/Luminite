@@ -12,7 +12,7 @@ layout (location = 1) in vec3 normal;
 layout (location = 0) out vec3 v_position;
 layout (location = 1) out vec3 v_normal;
 
-uniform MatrixBlock {
+layout (binding = 0) uniform MatrixBlock {
     mat4 matrix;
     mat4 modelview; // Redundunt, but needed for fragment shader
 };

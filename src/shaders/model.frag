@@ -11,10 +11,7 @@ layout (location = 0) out vec4 target;
 layout (location = 0) in vec3 v_position;
 layout (location = 1) in vec3 v_normal;
 
-uniform LightBlock {
-    vec3 light_dir;
-};
-
+const vec3 light_dir = vec3(0.0, 0.0, -1.0);
 const vec3 ambient_color = vec3(0.4, 0.4, 0.4);
 const vec3 diffuse_color = vec3(0.8, 0.8, 0.8); // Light grey
 const vec3 specular_color = vec3(1.0, 1.0, 1.0);
