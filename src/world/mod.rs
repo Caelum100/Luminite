@@ -1,4 +1,5 @@
 //! Stores data of objects and entities in the world.
+use super::*;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -65,6 +66,24 @@ pub struct Location {
     pub z: f64,
     pub pitch: f32,
     pub yaw: f32,
+}
+
+impl Location {
+    pub fn to_vec(&self) -> Vec3 {
+        vec3(self.x as f32, self.y as f32, self.z as f32)
+    }
+}
+
+impl Location {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Location {
+            x,
+            y,
+            z,
+            pitch: 0.0,
+            yaw: 0.0,
+        }
+    }
 }
 
 impl Hash for Location {

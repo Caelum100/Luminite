@@ -4,8 +4,8 @@ use super::back;
 use super::winit;
 use super::*;
 use gfx_hal::{
-    buffer::Usage,
-    command::{ClearColor, ClearValue},
+    buffer::{IndexBufferView, Usage},
+    command::{ClearColor, ClearValue, Primary, RenderPassInlineEncoder},
     format::{Aspects, ChannelType, Format, Swizzle},
     image::{Access, Extent, Layout, SubresourceRange, ViewKind},
     memory::{Barrier, Dependencies, Properties},
@@ -22,12 +22,14 @@ use gfx_hal::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
         PipelineStage, Rasterizer, Rect, Viewport,
     },
-    Backbuffer, Backend, Device, FrameSync, Graphics, Instance, MemoryType, Primitive, QueueGroup,
-    Submission, Surface, SwapImageIndex, Swapchain, SwapchainConfig,
+    Backbuffer, Backend, Device, FrameSync, Graphics, Instance, MemoryType, PhysicalDevice,
+    Primitive, QueueGroup, Submission, Surface, SwapImageIndex, Swapchain, SwapchainConfig,
 };
 
+use gfx_hal::IndexType;
 use std::borrow::Borrow;
 
+pub mod asset_load;
 pub mod buffer_util;
 pub mod context;
 pub mod factory;
@@ -35,12 +37,25 @@ pub mod factory;
 /// A three-dimensional vertex
 /// with a color.
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct Vertex {
     pub position: Vec3,
     pub color: Vec3,
 }
 
+impl Vertex {
+    /// Produces a vertex with the specified
+    /// positions and a randomized color.
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Vertex {
+            position: vec3(x, y, z),
+            color: vec3(rand::random(), rand::random(), rand::random()),
+        }
+    }
+}
+
 /// Uniform
+#[derive(Clone, Copy)]
 struct MatrixBlock {
     /// The full MVP matrix
     matrix: Mat4,
@@ -86,26 +101,27 @@ pub fn create_context() -> RenderContext<back::Backend> {
         .with_pipeline(&pipeline_layout)
         .with_vertex_attr(vertex_desc, vec![position_attr, color_attr]);
 
-    builder.build()
+    let mut ctx = builder.build();
+    asset_load::upload_models(&mut ctx);
+    ctx
 }
 
 pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
-    let device = &mut ctx.device;
-    let swapchain = &mut ctx.swapchain;
-    let image_views = &mut ctx.image_views;
-    let frame_buffers = &mut ctx.frame_buffers;
-    let (frame_fence, frame_semaphore) = (&mut ctx.frame_fence, &mut ctx.frame_semaphore);
-    let command_pool = &mut ctx.command_pool;
+    let device = &ctx.device;
+    let image_views = &ctx.image_views;
+    let frame_buffers = &ctx.frame_buffers;
+    let (frame_fence, frame_semaphore) = (&ctx.frame_fence, &ctx.frame_semaphore);
 
     device.reset_fence(&frame_fence);
-    command_pool.reset();
+    ctx.command_pool.reset();
 
-    let frame_index: SwapImageIndex = swapchain
+    let frame_index: SwapImageIndex = ctx
+        .swapchain
         .acquire_image(0, FrameSync::Semaphore(frame_semaphore))
         .unwrap();
 
     let finished_command_buffer = {
-        let mut command_buffer = command_pool.acquire_command_buffer(false);
+        let mut command_buffer = ctx.command_pool.acquire_command_buffer(false);
 
         let viewport = viewport(&ctx.extent);
         command_buffer.set_viewports(0, &[viewport.clone()]);
@@ -120,6 +136,18 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
                 viewport.rect,
                 &[ClearValue::Color(ClearColor::Float([0.0, 0.0, 0.0, 1.0]))],
             );
+
+            // Draw each object in the world
+            // TODO distance checks, instanced rendering
+            for object in world.get_objs().values() {
+                render_obj(
+                    object,
+                    &mut encoder,
+                    &ctx.device,
+                    &ctx.memory_types,
+                    &ctx.models,
+                );
+            }
         }
 
         command_buffer.finish()
@@ -133,9 +161,61 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
 
     device.wait_for_fence(&frame_fence, !0);
 
-    swapchain
+    ctx.swapchain
         .present(&mut ctx.queue_group.queues[0], frame_index, &[])
         .unwrap();
+}
+
+fn render_obj<B: Backend>(
+    object: &world::Object,
+    encoder: &mut RenderPassInlineEncoder<B, Primary>,
+    device: &B::Device,
+    memory_types: &Vec<MemoryType>,
+    models: &Vec<context::ModelBuffer<B>>,
+) {
+    let model_buffer = &models[object.model_index];
+    encoder.bind_vertex_buffers(0, vec![(&model_buffer.vertices.buffer, 0)]);
+
+    let index_buffer_view = IndexBufferView {
+        buffer: &model_buffer.indices.buffer,
+        offset: 0,
+        index_type: IndexType::U32,
+    };
+    encoder.bind_index_buffer(index_buffer_view);
+
+    let matrix = mvp_matrix(object);
+
+    let (uniform_buffer, uniform_memory) = buffer_util::create_buffer::<B, MatrixBlock>(
+        device,
+        memory_types,
+        Properties::CPU_VISIBLE,
+        Usage::UNIFORM,
+        &[MatrixBlock { matrix }],
+    );
+
+    encoder.draw_indexed(0..(model_buffer.indices.element_count as u32), 0, 0..1);
+}
+
+/// Produces a model-view-projection matrix
+/// for the specified object.
+fn mvp_matrix(object: &world::Object) -> Mat4 {
+    use glm::ext::*;
+    let translation = translate(&num::one(), object.location.to_vec());
+    // TODO rotation
+    let rotation: Mat4 = num::one();
+    let scale: Mat4 = num::one();
+    let model = translation * rotation * scale;
+
+    // TODO moving camera
+    let view = look_at(
+        vec3(4.0, 3.0, 3.0),
+        vec3(0.0, 0.0, 0.0),
+        vec3(0.0, 1.0, 0.0),
+    );
+
+    // TODO view distance, custom aspect ratio
+    let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 100.0);
+    model * view * projection
 }
 
 /// Destroys the RenderContext.

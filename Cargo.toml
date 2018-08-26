@@ -9,6 +9,9 @@ winit = "0.17.2"
 glm = "0.2.3"
 log = "0.4.4"
 simple_logger = "0.5.0"
+tobj = "0.1.6"
+rand = "0.5.5"
+num = "0.2.0"
 
 [features]
 vulkan = ["gfx-backend-vulkan"]
@@ -19,7 +22,7 @@ metal = ["gfx-backend-metal"]
 git = "https://github.com/gfx-rs/gfx"
 rev = "ff97cb3"
 
-[dependencies.gfx-backend-vulkan]
+[target.'cfg(not(target_os = "macos"))'.dependencies.gfx-backend-vulkan]
 git = "https://github.com/gfx-rs/gfx"
 rev = "ff97cb3"
 optional = true

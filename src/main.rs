@@ -2,7 +2,10 @@ extern crate glm;
 extern crate winit;
 #[macro_use]
 extern crate log;
+extern crate num;
+extern crate rand;
 extern crate simple_logger;
+extern crate tobj;
 
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;
@@ -17,7 +20,7 @@ pub use glm::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use winit::{Event, WindowEvent};
-use world::World;
+use world::{Location, Object, World};
 
 pub mod render;
 pub mod world;
@@ -35,6 +38,12 @@ fn main() {
         world: World::new(),
         running: true,
     };
+
+    game.world.add_object(Object {
+        id: 0,
+        model_index: 0,
+        location: Location::new(0.0, 0.0, 0.0),
+    });
 
     main_loop(&mut game);
 }

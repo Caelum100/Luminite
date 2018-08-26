@@ -1,0 +1,57 @@
+# Based on the "trust" template v0.1.2
+# https://github.com/japaric/trust/tree/v0.1.2
+
+dist: trusty
+language: rust
+services: docker
+sudo: required
+
+env:
+  global:
+  - CRATE_NAME=luminite
+
+matrix:
+  include:
+  - env: TARGET=x86_64-apple-darwin
+    os: osx
+before_install:
+- set -e
+- rustup self update
+
+install:
+- sh ci/install.sh
+- source ~/.cargo/env || true
+
+script:
+- bash ci/script.sh
+
+after_script: set +e
+
+before_deploy:
+- sh ci/before_deploy.sh
+
+deploy:
+  api_key:
+    secure: 'l22T/yXPlQgUv0zs/A3FPkDx5qujOGwQ0Ax6Sw9npFNca48efawIrxEYwKv2v1tSaCIG3cT/kf4Kd++y1Dhfo+mmozdJsYC4sUWo4sWVkrO9dRtt5IJCTy5nb9bgd2MQTtq5nMugA9E6laiVLpO9juIpr7EwmCdXhJXEXSxoEor7nJlrxrUM9yt2U8uViJIW6lHqG3SaZhWTKCdzpixLk9F7krXfKXTTwuc5R9UribPEWNnwSoXuScfWwuCQbta2SO5HXC+M5izj6bo7a4OeXERwjm9DfpQiU+ox4PKAKpbmc6DkMQuB38fqXmm3vdHTIBcuuS1oGkqMX3fuA29VQpcOaG7Z3Esr+qk/aWk1CAOcKyw+npIw5HhK0rgJNqhAWT4KwoD8My4jn+tZO0Wl+KJy099uZjkbgjN7BnrpGmmQSPflfxR0CqlubU44tQ1m6xods1BJ8H1uEpJe59hbi7iMC750hREHuQ5SxSXzXgh3Ew+IhWx1yBeipy1BRaP5xdG1BhMFpGbOhOR3N+wrqIrgyv6m75sP85pY2O+iTg5SC9NkgFA44aMgWY2EPwoHNSXu5UF+qF/XbnnTjMdHT6fx5wnaU/CgIzOezChJeFAvbMYZ3bd5FW7yZltXHaMyeLTjWNOFH5dGZVs4BBpBZvIH1kMzFJbKdl+c4qhG3zQ='
+  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  on:
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
+  provider: releases
+  skip_cleanup: true
+
+cache: cargo
+before_cache:
+# Travis can't cache files that are not readable by "others"
+- chmod -R a+r $HOME/.cargo
+
+branches:
+  only:
+  # release tags
+  - /^v\d+\.\d+\.\d+.*$/
+  - master
+
+notifications:
+  email:
+    on_success: never

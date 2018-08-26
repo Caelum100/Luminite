@@ -48,6 +48,7 @@ pub struct RenderBuilder<'a, B: Backend> {
     caps: Option<gfx_hal::SurfaceCapabilities>,
     vertex_desc: Option<VertexBufferDesc>,
     attr_descs: Vec<AttributeDesc>,
+    memory_types: Vec<MemoryType>,
 }
 
 impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
@@ -78,6 +79,7 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
             pipeline_layout: &[],
             vertex_desc: None,
             attr_descs: vec![],
+            memory_types: vec![],
         }
     }
 }
@@ -169,6 +171,8 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             .unwrap()
             .compatibility(physical_device);
         self.caps = Some(caps);
+
+        self.memory_types = physical_device.memory_properties().memory_types;
 
         self.surface_color_format = {
             // Pick color format
@@ -407,6 +411,8 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             frame_semaphore,
             frame_fence,
             extent,
+            models: Vec::new(),
+            memory_types: self.memory_types,
         }
     }
 }

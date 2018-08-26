@@ -1,5 +1,11 @@
 use super::*;
 
+pub struct BufferMem<B: Backend> {
+    pub buffer: B::Buffer,
+    pub memory: B::Memory,
+    pub element_count: usize,
+}
+
 /// Holds all values necessary to render to the screen.
 pub struct RenderContext<B: Backend> {
     /// The gfx-rs instance
@@ -32,4 +38,14 @@ pub struct RenderContext<B: Backend> {
     /// Fence to wait for draw calls to finish
     pub frame_fence: B::Fence,
     pub extent: Extent,
+    /// A vector containing all models uploaded to the GPU.
+    /// The `model_index` property of objects is an index
+    /// into this vector.
+    pub models: Vec<ModelBuffer<B>>,
+    pub memory_types: Vec<MemoryType>,
+}
+
+pub struct ModelBuffer<B: Backend> {
+    pub vertices: BufferMem<B>,
+    pub indices: BufferMem<B>,
 }

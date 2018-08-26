@@ -1,0 +1,54 @@
+# Based on the "trust" template v0.1.2
+# https://github.com/japaric/trust/tree/v0.1.2
+
+environment:
+  global:
+    RUST_VERSION: stable
+
+    CRATE_NAME: luminite
+
+  matrix:
+  - TARGET: x86_64-pc-windows-msvc
+
+install:
+- curl -sSf -o rustup-init.exe https://win.rustup.rs/
+- rustup-init.exe -y --default-host %TARGET% --default-toolchain %RUST_VERSION%
+- set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
+- rustc -Vv
+- cargo -V
+
+test_script:
+# we don't run the "test phase" when doing deploys
+- cargo build --target %TARGET% --release --features=dx12
+
+
+before_deploy:
+- cargo rustc --target %TARGET% --release -- -C lto
+- ps: ci\before_deploy.ps1
+
+deploy:
+  artifact: /.*\.zip/
+  auth_token:
+    secure: gInK/BvaznLbyv0CwjGkOKqMMJCCKeabJ142Sr5RwvhzHPoH0HnjjzwGspV42yv2
+  description: ''
+  on:
+    RUST_VERSION: stable
+    appveyor_repo_tag: true
+  provider: GitHub
+
+cache:
+- C:\Users\appveyor\.cargo\registry
+- target
+
+branches:
+  only:
+  # Release tags
+  - /^v\d+\.\d+\.\d+.*$/
+  - master
+
+notifications:
+- provider: Email
+  on_build_success: false
+
+# Building is done in the test phase, so we disable Appveyor's build phase.
+build: false
