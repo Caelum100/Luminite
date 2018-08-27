@@ -127,6 +127,16 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
         command_buffer.set_viewports(0, &[viewport.clone()]);
         command_buffer.set_scissors(0, &[viewport.rect]);
 
+        command_buffer.bind_graphics_pipeline(&ctx.pipeline);
+        command_buffer.bind_vertex_buffers(0, vec![(&ctx.models[0].vertices.buffer, 0)]);
+        command_buffer.bind_graphics_descriptor_sets(&ctx.pipeline_layout, 0, vec![&ctx.desc_set], &[]);
+
+        let index_buffer_view = IndexBufferView {
+            buffer: &ctx.models[0].indices.buffer,
+            offset: 0,
+            index_type: IndexType::U32,
+        };
+        command_buffer.bind_index_buffer(index_buffer_view);
         {
             let mut encoder = command_buffer.begin_render_pass_inline(
                 &ctx.render_pass,
@@ -180,16 +190,6 @@ fn render_obj<B: Backend>(
     desc_set: &B::DescriptorSet,
 ) {
     let model_buffer = &models[object.model_index];
-    encoder.bind_vertex_buffers(0, vec![(&model_buffer.vertices.buffer, 0)]);
-    encoder.bind_graphics_pipeline(pipeline);
-    encoder.bind_graphics_descriptor_sets(pipeline_layout, 0, vec![desc_set], &[]);
-
-    let index_buffer_view = IndexBufferView {
-        buffer: &model_buffer.indices.buffer,
-        offset: 0,
-        index_type: IndexType::U32,
-    };
-    encoder.bind_index_buffer(index_buffer_view);
 
     let matrix = mvp_matrix(object);
 
@@ -201,7 +201,7 @@ fn render_obj<B: Backend>(
 
     println!("{}", model_buffer.indices.element_count);
 
-    encoder.draw_indexed(0..(model_buffer.indices.element_count as u32), 0, 0..1);
+    encoder.draw(0..(model_buffer.vertices.element_count as u32), 0..1);
 }
 
 /// Produces a model-view-projection matrix
