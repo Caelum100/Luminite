@@ -43,6 +43,8 @@ pub struct RenderContext<B: Backend> {
     /// into this vector.
     pub models: Vec<ModelBuffer<B>>,
     pub memory_types: Vec<MemoryType>,
+    pub desc_set: B::DescriptorSet,
+    pub uniform_buffer: BufferMem<B>,
 }
 
 pub struct ModelBuffer<B: Backend> {

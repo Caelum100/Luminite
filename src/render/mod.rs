@@ -15,15 +15,16 @@ use gfx_hal::{
     },
     pool::{CommandPool, CommandPoolCreateFlags},
     pso::{
-        AttributeDesc, DescriptorSetLayoutBinding, DescriptorType, Element, ShaderStageFlags,
-        VertexBufferDesc,
+        AttributeDesc, Descriptor, DescriptorRangeDesc, DescriptorSetLayoutBinding,
+        DescriptorSetWrite, DescriptorType, Element, ShaderStageFlags, VertexBufferDesc,
     },
     pso::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
         PipelineStage, Rasterizer, Rect, Viewport,
     },
-    Backbuffer, Backend, Device, FrameSync, Graphics, Instance, MemoryType, PhysicalDevice,
-    Primitive, QueueGroup, Submission, Surface, SwapImageIndex, Swapchain, SwapchainConfig,
+    Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, Instance, MemoryType,
+    PhysicalDevice, Primitive, QueueGroup, Submission, Surface, SwapImageIndex, Swapchain,
+    SwapchainConfig,
 };
 
 use gfx_hal::IndexType;
@@ -127,8 +128,6 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
         command_buffer.set_viewports(0, &[viewport.clone()]);
         command_buffer.set_scissors(0, &[viewport.rect]);
 
-        command_buffer.bind_graphics_pipeline(&ctx.pipeline);
-
         {
             let mut encoder = command_buffer.begin_render_pass_inline(
                 &ctx.render_pass,
@@ -146,6 +145,10 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
                     &ctx.device,
                     &ctx.memory_types,
                     &ctx.models,
+                    &mut ctx.uniform_buffer,
+                    &ctx.pipeline,
+                    &ctx.pipeline_layout,
+                    &ctx.desc_set,
                 );
             }
         }
@@ -172,9 +175,15 @@ fn render_obj<B: Backend>(
     device: &B::Device,
     memory_types: &Vec<MemoryType>,
     models: &Vec<context::ModelBuffer<B>>,
+    uniform_buffer: &mut context::BufferMem<B>,
+    pipeline: &B::GraphicsPipeline,
+    pipeline_layout: &B::PipelineLayout,
+    desc_set: &B::DescriptorSet,
 ) {
     let model_buffer = &models[object.model_index];
     encoder.bind_vertex_buffers(0, vec![(&model_buffer.vertices.buffer, 0)]);
+    encoder.bind_graphics_pipeline(pipeline);
+    encoder.bind_graphics_descriptor_sets(pipeline_layout, 0, vec![desc_set], &[]);
 
     let index_buffer_view = IndexBufferView {
         buffer: &model_buffer.indices.buffer,
@@ -185,13 +194,13 @@ fn render_obj<B: Backend>(
 
     let matrix = mvp_matrix(object);
 
-    let (uniform_buffer, uniform_memory) = buffer_util::create_buffer::<B, MatrixBlock>(
+    buffer_util::fill_buffer::<B, MatrixBlock>(
         device,
-        memory_types,
-        Properties::CPU_VISIBLE,
-        Usage::UNIFORM,
+        &mut uniform_buffer.memory,
         &[MatrixBlock { matrix }],
     );
+
+    println!("{}", model_buffer.indices.element_count);
 
     encoder.draw_indexed(0..(model_buffer.indices.element_count as u32), 0, 0..1);
 }

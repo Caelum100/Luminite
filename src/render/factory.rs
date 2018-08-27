@@ -329,6 +329,35 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             .unwrap()
             .destroy_shader_module(fragment_shader_mod);
 
+        let (uniform_buffer, uniform_memory) =
+            buffer_util::create_buffer::<back::Backend, MatrixBlock>(
+                self.device.as_ref().unwrap(),
+                self.memory_types.as_slice(),
+                Properties::CPU_VISIBLE,
+                Usage::UNIFORM,
+                &[MatrixBlock { matrix: num::one() }],
+            );
+
+        let mut desc_pool = self.device.as_ref().unwrap().create_descriptor_pool(
+            1,
+            &[DescriptorRangeDesc {
+                ty: DescriptorType::UniformBuffer,
+                count: 1,
+            }],
+        );
+
+        let desc_set = desc_pool.allocate_set(&set_layout).unwrap();
+
+        self.device
+            .as_ref()
+            .unwrap()
+            .write_descriptor_sets(vec![DescriptorSetWrite {
+                set: &desc_set,
+                binding: 0,
+                array_offset: 0,
+                descriptors: Some(Descriptor::Buffer(&uniform_buffer, None..None)),
+            }]);
+
         // Swapchain
         let swapchain_config = SwapchainConfig::from_caps(
             self.caps.as_ref().unwrap(),
@@ -413,6 +442,12 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             extent,
             models: Vec::new(),
             memory_types: self.memory_types,
+            desc_set,
+            uniform_buffer: context::BufferMem {
+                buffer: uniform_buffer,
+                memory: uniform_memory,
+                element_count: 1,
+            },
         }
     }
 }
