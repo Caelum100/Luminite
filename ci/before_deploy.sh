@@ -18,7 +18,7 @@ main() {
 
     test -f Cargo.lock || cargo generate-lockfile
 
-    cross rustc --target $TARGET --release -- -C lto
+    cross build --target $TARGET --release --features=metal
 
     cp target/$TARGET/release/luminite* $stage/
 

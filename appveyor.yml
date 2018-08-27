@@ -23,7 +23,7 @@ test_script:
 
 
 before_deploy:
-- cargo rustc --target %TARGET% --release -- -C lto
+- cargo build --target %TARGET% --release --features=dx12
 - ps: ci\before_deploy.ps1
 
 deploy:
