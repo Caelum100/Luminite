@@ -37,11 +37,10 @@ pub mod factory;
 
 /// A three-dimensional vertex
 /// with a color.
-#[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Vertex {
-    pub position: Vec3,
-    pub color: Vec3,
+    pub a_position: Vec3,
+    pub a_color: Vec3,
 }
 
 impl Vertex {
@@ -49,8 +48,8 @@ impl Vertex {
     /// positions and a randomized color.
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vertex {
-            position: vec3(x, y, z),
-            color: vec3(rand::random(), rand::random(), rand::random()),
+            a_position: vec3(x, y, z),
+            a_color: vec3(rand::random(), rand::random(), rand::random()),
         }
     }
 }
