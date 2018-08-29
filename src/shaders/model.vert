@@ -16,6 +16,6 @@ layout (binding = 0) uniform MatrixBlock {
 };
 
 void main() {
-    gl_Position = matrix * vec4(a_position, 0);
+    gl_Position = matrix * vec4(a_position, 1.0);
     v_color = a_color;
 }
