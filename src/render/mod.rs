@@ -49,7 +49,11 @@ impl Vertex {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vertex {
             a_position: vec3(x, y, z),
-            a_color: vec3(rand::random(), rand::random(), rand::random()),
+            a_color: vec3(
+                rand::random::<f32>().abs(),
+                rand::random::<f32>().abs(),
+                rand::random::<f32>().abs()
+            ),
         }
     }
 }
@@ -222,8 +226,8 @@ fn mvp_matrix(object: &world::Object) -> Mat4 {
     );
 
     // TODO view distance, custom aspect ratio
-    let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 100.0);
-    model * view * projection
+    let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 128.0);
+    projection * view * model
 }
 
 /// Destroys the RenderContext.

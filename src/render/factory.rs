@@ -329,15 +329,6 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             .unwrap()
             .destroy_shader_module(fragment_shader_mod);
 
-        let (uniform_buffer, uniform_memory) =
-            buffer_util::create_buffer::<back::Backend, MatrixBlock>(
-                self.device.as_ref().unwrap(),
-                self.memory_types.as_slice(),
-                Properties::CPU_VISIBLE,
-                Usage::UNIFORM,
-                &[MatrixBlock { matrix: num::one() }],
-            );
-
         let mut desc_pool = self.device.as_ref().unwrap().create_descriptor_pool(
             1,
             &[DescriptorRangeDesc {
@@ -347,6 +338,15 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         );
 
         let desc_set = desc_pool.allocate_set(&set_layout).unwrap();
+
+        let (uniform_buffer, uniform_memory) =
+            buffer_util::create_buffer::<back::Backend, MatrixBlock>(
+                self.device.as_ref().unwrap(),
+                self.memory_types.as_slice(),
+                Properties::CPU_VISIBLE,
+                Usage::UNIFORM,
+                &[MatrixBlock { matrix: num::one() }],
+            );
 
         self.device
             .as_ref()
