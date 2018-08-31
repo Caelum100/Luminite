@@ -4,7 +4,7 @@
 set -ex
 
 main() {
-    cross build --target $TARGET --release --features=metal
+    cargo build --release --features=$FEATURES
 }
 
 # we don't run the "test phase" when doing deploys

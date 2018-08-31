@@ -4,7 +4,7 @@
 dist: trusty
 language: rust
 services: docker
-sudo: required
+sudo: false
 
 env:
   global:
@@ -12,8 +12,16 @@ env:
 
 matrix:
   include:
-  - env: TARGET=x86_64-apple-darwin
+  - env:
+    - TARGET=x86_64-apple-darwin
+    - FEATURES=metal
+    - TARGET_NAME=macos
     os: osx
+  - env:
+      - TARGET=x86_64-unknown-linux-gnu
+      - FEATURES=vulkan
+      - TARGET_NAME=linux
+    os: linux
 before_install:
 - set -e
 - rustup self update

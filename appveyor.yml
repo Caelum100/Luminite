@@ -9,6 +9,7 @@ environment:
 
   matrix:
   - TARGET: x86_64-pc-windows-msvc
+    TARGET_NAME: windows
 
 install:
 - curl -sSf -o rustup-init.exe https://win.rustup.rs/

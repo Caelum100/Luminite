@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
- This script takes care of building your crate and packaging it for release
+# This script takes care of building your crate and packaging it for release
 
 set -ex
 
@@ -18,12 +18,12 @@ main() {
 
     test -f Cargo.lock || cargo generate-lockfile
 
-    cross build --target $TARGET --release --features=metal
+    cargo build --target $TARGET --release --features=$FEATURES
 
-    cp target/$TARGET/release/luminite* $stage/
+    cp target/$TARGET/release/luminite $stage/
 
     cd $stage
-    tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz *
+    tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET_NAME.tar.gz *
     cd $src
 
     rm -rf $stage
