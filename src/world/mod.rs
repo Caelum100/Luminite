@@ -4,12 +4,12 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
 
-pub struct World<B: gfx_hal::Backend> {
-    objects: HashMap<u32, Object<B>>,
+pub struct World {
+    objects: HashMap<u32, Object>,
     object_id_counter: u32,
 }
 
-impl<B: gfx_hal::Backend> World<B> {
+impl World {
     pub fn add_object(&mut self, object: Object<B>) {
         self.objects.insert(object.id, object);
     }
@@ -31,7 +31,7 @@ impl<B: gfx_hal::Backend> World<B> {
     }
 
     /// Creates a new world with no objects.
-    pub fn new() -> World<B> {
+    pub fn new() -> World {
         World {
             objects: HashMap::new(),
             object_id_counter: 0,
@@ -52,13 +52,13 @@ impl<B: gfx_hal::Backend> World<B> {
 }
 
 /// An object in the world
-pub struct Object<B: gfx_hal::Backend> {
+pub struct Object {
     /// Unique object ID
     pub id: u32,
-    /// The index into the model vector
-    pub render: render::ObjectRender<B>,
     /// The location in world space of the object
     pub location: Location,
+    /// The index into the model vector
+    pub render: render::ObjectRenderData,
 }
 
 impl<B: gfx_hal::Backend> Hash for Object<B> {

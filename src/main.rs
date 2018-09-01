@@ -13,6 +13,8 @@ extern crate gfx_backend_dx12 as back;
 extern crate gfx_backend_metal as back;
 #[cfg(all(feature = "vulkan", not(any(feature = "dx12", feature = "metal"))))]
 extern crate gfx_backend_vulkan as back;
+#[cfg(feature = "gl")]
+extern crate glium;
 
 extern crate gfx_hal;
 

@@ -17,6 +17,7 @@ num = "0.2.0"
 vulkan = ["gfx-backend-vulkan"]
 dx12 = ["gfx-backend-dx12"]
 metal = ["gfx-backend-metal"]
+gl = ["glium"]
 
 [dependencies.gfx-hal]
 git = "https://github.com/gfx-rs/gfx"
@@ -35,6 +36,10 @@ optional = true
 [target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
 git = "https://github.com/gfx-rs/gfx"
 rev = "3cd05e49"
+optional = true
+
+[dependencies.glium]
+git = "https://github.com/glium/glium"
 optional = true
 
 [build-dependencies]
