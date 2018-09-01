@@ -17,5 +17,8 @@ layout (binding = 0) uniform MatrixBlock {
 
 void main() {
     gl_Position = matrix * vec4(a_position, 1.0);
+    // gfx-rs and Vulkan use inverted Y coordinates from OpenGL, so
+    // we have to invert.
+    gl_Position.y = -gl_Position.y;
     v_color = a_color;
 }
