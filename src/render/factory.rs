@@ -49,6 +49,7 @@ pub struct RenderBuilder<'a, B: Backend> {
     vertex_desc: Option<VertexBufferDesc>,
     attr_descs: Vec<AttributeDesc>,
     memory_types: Vec<MemoryType>,
+    depth_format: Format,
 }
 
 impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
@@ -80,6 +81,7 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
             vertex_desc: None,
             attr_descs: vec![],
             memory_types: vec![],
+            depth_format: Format::D32FloatS8Uint,
         }
     }
 }
@@ -221,10 +223,18 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 layouts: Layout::Undefined..Layout::Present,
             };
 
+            let depth_attachment = Attachment {
+                format: Some(self.depth_format),
+                samples: 1,
+                ops: AttachmentOps::new(AttachmentLoadOp::Clear, AttachmentStoreOp::DontCare),
+                stencil_ops: AttachmentOps::DONT_CARE,
+                layouts: Layout::Undefined..Layout::DepthStencilAttachmentOptimal,
+            };
+
             // Single subpass for now
             let subpass = SubpassDesc {
                 colors: &[(0, Layout::ColorAttachmentOptimal)],
-                depth_stencil: None,
+                depth_stencil: Some(&(1, Layout::DepthStencilAttachmentOptimal)),
                 inputs: &[],
                 resolves: &[],
                 preserves: &[],
@@ -239,7 +249,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             };
 
             self.device.as_mut().unwrap().create_render_pass(
-                &[color_attachment],
+                &[color_attachment, depth_attachment],
                 &[subpass],
                 &[dependency],
             )
@@ -313,6 +323,15 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 }
             }
 
+            pipeline_desc.depth_stencil = DepthStencilDesc {
+                depth: DepthTest::On {
+                    fun: Comparison::Less,
+                    write: true,
+                },
+                depth_bounds: false,
+                stencil: StencilTest::default(),
+            };
+
             self.device
                 .as_ref()
                 .unwrap()
@@ -342,6 +361,76 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             swapchain_config,
             None,
         );
+        let depth_format = self.depth_format;
+
+        // Depth testing
+        let (depth_image, depth_image_memory, depth_image_view) = {
+            let ty = image::Kind::D2(extent.width as Size, extent.height as Size, 1, 1);
+
+            let unbound_depth_image = self
+                .device
+                .as_ref()
+                .unwrap()
+                .create_image(
+                    ty,
+                    1,
+                    depth_format,
+                    image::Tiling::Optimal,
+                    image::Usage::DEPTH_STENCIL_ATTACHMENT,
+                    image::StorageFlags::empty(),
+                )
+                .unwrap();
+
+            let image_reqs = self
+                .device
+                .as_ref()
+                .unwrap()
+                .get_image_requirements(&unbound_depth_image);
+
+            let device_type = self
+                .memory_types
+                .iter()
+                .enumerate()
+                .position(|(id, memory_type)| {
+                    image_reqs.type_mask & (1 << id) != 0
+                        && memory_type.properties.contains(Properties::DEVICE_LOCAL)
+                })
+                .unwrap()
+                .into();
+
+            let depth_image_memory = self
+                .device
+                .as_ref()
+                .unwrap()
+                .allocate_memory(device_type, image_reqs.size)
+                .unwrap();
+
+            let depth_image = self
+                .device
+                .as_ref()
+                .unwrap()
+                .bind_image_memory(&depth_image_memory, 0, unbound_depth_image)
+                .unwrap();
+
+            let depth_image_view = self
+                .device
+                .as_ref()
+                .unwrap()
+                .create_image_view(
+                    &depth_image,
+                    image::ViewKind::D2,
+                    depth_format,
+                    Swizzle::NO,
+                    image::SubresourceRange {
+                        aspects: Aspects::DEPTH | Aspects::STENCIL,
+                        levels: 0..1,
+                        layers: 0..1,
+                    },
+                )
+                .unwrap();
+
+            (depth_image, depth_image_memory, depth_image_view)
+        };
 
         // Create image views and frame buffers
         let (image_views, frame_buffers) = match backbuffer {
@@ -377,7 +466,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                             .unwrap()
                             .create_framebuffer(
                                 self.render_pass.as_ref().unwrap(),
-                                vec![image_view],
+                                vec![image_view, &depth_image_view],
                                 extent,
                             )
                             .unwrap()
@@ -414,6 +503,9 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             models: Vec::new(),
             memory_types: self.memory_types,
             set_layout,
+            depth_image,
+            depth_image_view,
+            depth_image_memory,
         }
     }
 }

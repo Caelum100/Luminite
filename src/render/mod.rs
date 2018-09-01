@@ -5,9 +5,10 @@ use super::winit;
 use super::*;
 use gfx_hal::{
     buffer::{IndexBufferView, Usage},
-    command::{ClearColor, ClearValue, Primary, RenderPassInlineEncoder},
+    command::{ClearColor, ClearDepthStencil, ClearValue, Primary, RenderPassInlineEncoder},
     format::{Aspects, ChannelType, Format, Swizzle},
-    image::{Access, Extent, Layout, SubresourceRange, ViewKind},
+    image,
+    image::{Access, Extent, Layout, Size, SubresourceRange, ViewKind},
     memory::{Barrier, Dependencies, Properties},
     pass::{
         Attachment, AttachmentLoadOp, AttachmentOps, AttachmentStoreOp, Subpass, SubpassDependency,
@@ -15,8 +16,9 @@ use gfx_hal::{
     },
     pool::{CommandPool, CommandPoolCreateFlags},
     pso::{
-        AttributeDesc, Descriptor, DescriptorRangeDesc, DescriptorSetLayoutBinding,
-        DescriptorSetWrite, DescriptorType, Element, ShaderStageFlags, VertexBufferDesc,
+        AttributeDesc, Comparison, DepthStencilDesc, DepthTest, Descriptor, DescriptorRangeDesc,
+        DescriptorSetLayoutBinding, DescriptorSetWrite, DescriptorType, Element, ShaderStageFlags,
+        StencilTest, VertexBufferDesc,
     },
     pso::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
@@ -144,7 +146,10 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<back::Ba
                 &ctx.render_pass,
                 &frame_buffers[frame_index as usize],
                 viewport.rect,
-                &[ClearValue::Color(ClearColor::Float([0.0, 0.0, 0.0, 1.0]))],
+                &[
+                    ClearValue::Color(ClearColor::Float([0.0, 0.0, 0.0, 1.0])),
+                    ClearValue::DepthStencil(ClearDepthStencil(1.0, 0)),
+                ],
             );
 
             // Draw each object in the world

@@ -64,6 +64,9 @@ pub struct RenderContext<B: Backend> {
     pub memory_types: Vec<MemoryType>,
     /// The descriptor set layout
     pub set_layout: B::DescriptorSetLayout,
+    pub depth_image: B::Image,
+    pub depth_image_view: B::ImageView,
+    pub depth_image_memory: B::Memory,
 }
 
 /// Contains a `BufferMem` for both
