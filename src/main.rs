@@ -9,6 +9,8 @@ extern crate tobj;
 
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;
+#[cfg(feature = "gl")]
+extern crate gfx_backend_gl as back;
 #[cfg(feature = "metal")]
 extern crate gfx_backend_metal as back;
 #[cfg(all(feature = "vulkan", not(any(feature = "dx12", feature = "metal"))))]

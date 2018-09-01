@@ -25,12 +25,14 @@ impl<B: Backend> BufferMem<B> {
 /// Holds all values necessary to render to the screen.
 pub struct RenderContext<B: Backend> {
     /// The gfx-rs instance
+    #[cfg(not(feature = "gl"))]
     pub instance: back::Instance,
     /// The logical device selected for rendering
     pub device: B::Device,
     /// The events loop associated with the window
     pub events_loop: winit::EventsLoop,
     /// The window the game is open in
+    #[cfg(not(feature = "gl"))]
     pub window: winit::Window,
     /// The surface for rendering to
     pub surface: B::Surface,
