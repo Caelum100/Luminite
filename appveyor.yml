@@ -9,7 +9,11 @@ environment:
 
   matrix:
   - TARGET: x86_64-pc-windows-msvc
-    TARGET_NAME: windows
+    FEATURES: dx12
+    TARGET_NAME: windows-dx12
+  - TARGET: x86_64-pc-windows-msvc
+    FEATURES: vulkan
+    TARGET_NAME: windows-vulkan
 
 install:
 - curl -sSf -o rustup-init.exe https://win.rustup.rs/
@@ -20,11 +24,11 @@ install:
 
 test_script:
 # we don't run the "test phase" when doing deploys
-- cargo build --target %TARGET% --release --features=dx12
+- cargo build --target %TARGET% --release --features=%FEATURES%
 
 
 before_deploy:
-- cargo build --target %TARGET% --release --features=dx12
+- cargo build --target %TARGET% --release --features=%FEATURES%
 - ps: ci\before_deploy.ps1
 
 deploy:
