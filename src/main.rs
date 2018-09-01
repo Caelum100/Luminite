@@ -63,6 +63,7 @@ fn main() {
 fn main_loop(game: &mut Game) {
     while game.running {
         poll_events(game);
+        game.world.tick();
         render::render(&mut game.render, &mut game.world);
     }
 }

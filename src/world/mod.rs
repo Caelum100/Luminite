@@ -43,6 +43,12 @@ impl<B: gfx_hal::Backend> World<B> {
         self.object_id_counter += 1;
         result
     }
+
+    pub fn tick(&mut self) {
+        for object in self.objects.values_mut() {
+            object.location.yaw += 1.0;
+        }
+    }
 }
 
 /// An object in the world
