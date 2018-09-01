@@ -110,7 +110,8 @@ pub fn create_context() -> RenderContext<back::Backend> {
         .with_vertex_shader(include_bytes!("../../assets/shaders/model.vert.spv"))
         .with_fragment_shader(include_bytes!("../../assets/shaders/model.frag.spv"))
         .with_pipeline(&pipeline_layout)
-        .with_vertex_attr(vertex_desc, vec![position_attr, normal_attr]);
+        .with_vertex_attr(vertex_desc, vec![position_attr, normal_attr])
+        .with_dimensions(720, 480);
 
     let mut ctx = builder.build();
     asset_load::upload_models(&mut ctx);

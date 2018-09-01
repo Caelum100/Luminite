@@ -103,8 +103,8 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         self
     }
 
-    pub fn with_dimensions(mut self, dimensions: (u32, u32)) -> Self {
-        self.dimensions = dimensions;
+    pub fn with_dimensions(mut self, width: u32, height: u32) -> Self {
+        self.dimensions = (width, height);
         self
     }
 
