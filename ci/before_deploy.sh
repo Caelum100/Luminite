@@ -21,6 +21,7 @@ main() {
     cargo build --target $TARGET --release --features=$FEATURES
 
     cp target/$TARGET/release/luminite $stage/
+    cp -r assets $stage/
 
     cd $stage
     tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET_NAME.tar.gz *
