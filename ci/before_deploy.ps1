@@ -11,7 +11,7 @@ Set-Location $STAGE
 $ZIP = "$SRC_DIR\$($Env:CRATE_NAME)-$($Env:APPVEYOR_REPO_TAG_NAME)-$($Env:TARGET_NAME).zip"
 
 Copy-Item "$SRC_DIR\target\$($Env:TARGET)\release\luminite.exe" '.\'
-Copy-Dir "$SRC_DIR\assets" '.\assets' -Recurse
+Copy-Item "$SRC_DIR\assets" '.\assets' -Recurse
 
 7z a "$ZIP" *
 
