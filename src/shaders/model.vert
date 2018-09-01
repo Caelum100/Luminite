@@ -7,12 +7,14 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout (location = 0) in vec3 a_position;
-layout (location = 1) in vec3 a_color;
+layout (location = 1) in vec3 a_normal;
 
-layout (location = 0) out vec3 v_color;
+layout (location = 0) out vec3 v_position;
+layout (location = 1) out vec3 v_normal;
 
 layout (binding = 0) uniform MatrixBlock {
     mat4 matrix;
+    mat4 modelview; // TODO - this is redundant
 };
 
 void main() {
@@ -20,5 +22,6 @@ void main() {
     // gfx-rs and Vulkan use inverted Y coordinates from OpenGL, so
     // we have to invert.
     gl_Position.y = -gl_Position.y;
-    v_color = a_color;
+    v_position = gl_Position.xyz / gl_Position.w;
+    v_normal = transpose(inverse(mat3(modelview))) * a_normal;
 }

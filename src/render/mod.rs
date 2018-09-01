@@ -46,24 +46,20 @@ pub struct ObjectRender<B: Backend> {
 }
 
 /// A three-dimensional vertex
-/// with a color.
+/// with a position and normal.
 #[derive(Clone, Copy)]
 pub struct Vertex {
     pub a_position: Vec3,
-    pub a_color: Vec3,
+    pub a_normal: Vec3,
 }
 
 impl Vertex {
     /// Produces a vertex with the specified
-    /// positions and a randomized color.
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
+    /// positions and normals.
+    pub fn new(x: f32, y: f32, z: f32, nx: f32, ny: f32, nz: f32) -> Self {
         Vertex {
             a_position: vec3(x, y, z),
-            a_color: vec3(
-                rand::random::<f32>().abs(),
-                rand::random::<f32>().abs(),
-                rand::random::<f32>().abs(),
-            ),
+            a_normal: vec3(nx, ny, nz),
         }
     }
 }
@@ -73,6 +69,7 @@ impl Vertex {
 struct MatrixBlock {
     /// The full MVP matrix
     matrix: Mat4,
+    modelview: Mat4,
 }
 
 pub fn create_context() -> RenderContext<back::Backend> {
@@ -99,7 +96,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
         },
     };
 
-    let color_attr = AttributeDesc {
+    let normal_attr = AttributeDesc {
         location: 1,
         binding: 0,
         element: Element {
@@ -113,7 +110,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
         .with_vertex_shader(include_bytes!("../../assets/shaders/model.vert.spv"))
         .with_fragment_shader(include_bytes!("../../assets/shaders/model.frag.spv"))
         .with_pipeline(&pipeline_layout)
-        .with_vertex_attr(vertex_desc, vec![position_attr, color_attr]);
+        .with_vertex_attr(vertex_desc, vec![position_attr, normal_attr]);
 
     let mut ctx = builder.build();
     asset_load::upload_models(&mut ctx);
@@ -212,22 +209,20 @@ fn render_obj<B: Backend>(
     };
     encoder.bind_index_buffer(index_buffer_view);
 
-    let matrix = mvp_matrix(object);
+    let (matrix, modelview) = mvp_matrix(object);
 
     buffer_util::fill_buffer::<B, MatrixBlock>(
         device,
         &mut object.render.uniform.buffer.memory,
-        &[MatrixBlock { matrix }],
+        &[MatrixBlock { matrix, modelview }],
     );
-
-    println!("{}", model_buffer.indices.element_count);
 
     encoder.draw_indexed(0..(model_buffer.indices.element_count as u32), 0, 0..1);
 }
 
 /// Produces a model-view-projection matrix
 /// for the specified object.
-fn mvp_matrix<B: Backend>(object: &Object<B>) -> Mat4 {
+fn mvp_matrix<B: Backend>(object: &Object<B>) -> (Mat4, Mat4) {
     use glm::ext::*;
     let translation = translate(&num::one(), object.location.to_vec());
 
@@ -254,7 +249,7 @@ fn mvp_matrix<B: Backend>(object: &Object<B>) -> Mat4 {
 
     // TODO view distance, custom aspect ratio
     let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 128.0);
-    projection * view * model
+    (projection * view * model, view * model)
 }
 
 /// Destroys the RenderContext.

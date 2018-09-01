@@ -56,7 +56,7 @@ fn combine_models(mut models: Vec<tobj::Model>) -> (Vec<Vertex>, Vec<u32>) {
 
     for model in models.iter_mut() {
         let mut mesh = &mut model.mesh;
-        vertices.append(&mut positions_to_vertices(&mesh.positions));
+        vertices.append(&mut positions_to_vertices(&mesh.positions, &mesh.normals));
         indices.append(&mut mesh.indices);
     }
     (vertices, indices)
@@ -65,7 +65,7 @@ fn combine_models(mut models: Vec<tobj::Model>) -> (Vec<Vertex>, Vec<u32>) {
 /// Converts vectors of floats to vectors
 /// of vertices. The length of the `positions`
 /// array must be a multiple of three.
-fn positions_to_vertices(positions: &Vec<f32>) -> Vec<Vertex> {
+fn positions_to_vertices(positions: &Vec<f32>, normals: &Vec<f32>) -> Vec<Vertex> {
     if positions.len() % 3 != 0 {
         panic!("Length of position array must be a multiple of three");
     }
@@ -79,6 +79,9 @@ fn positions_to_vertices(positions: &Vec<f32>) -> Vec<Vertex> {
             positions[index],
             positions[index + 1],
             positions[index + 2],
+            normals[index],
+            normals[index + 1],
+            normals[index + 2],
         ));
     }
 
