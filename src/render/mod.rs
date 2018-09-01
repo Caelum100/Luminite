@@ -6,7 +6,7 @@ use super::*;
 use gfx_hal::{
     buffer::{IndexBufferView, Usage},
     command::{ClearColor, ClearDepthStencil, ClearValue, Primary, RenderPassInlineEncoder},
-    format::{Aspects, ChannelType, Format, Rgba8Srgb as ColorFormat, Swizzle},
+    format::{Aspects, ChannelType, Format, Swizzle},
     image,
     image::{Access, Extent, Layout, Size, SubresourceRange, ViewKind},
     memory::{Barrier, Dependencies, Properties},
