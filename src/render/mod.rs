@@ -230,8 +230,18 @@ fn render_obj<B: Backend>(
 fn mvp_matrix<B: Backend>(object: &Object<B>) -> Mat4 {
     use glm::ext::*;
     let translation = translate(&num::one(), object.location.to_vec());
-    // TODO rotation
-    let rotation: Mat4 = num::one();
+
+    let rotation: Mat4 = rotate(
+        &num::one(),
+        radians(object.location.yaw),
+        vec3(0.0, 1.0, 0.0),
+    )
+        * rotate(
+            &num::one(),
+            radians(object.location.pitch),
+            vec3(1.0, 0.0, 0.0),
+        );
+
     let scale: Mat4 = num::one();
     let model = translation * rotation * scale;
 

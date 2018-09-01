@@ -50,7 +50,7 @@ fn main() {
     let sword = Object::new(
         &mut game.world,
         render::create_obj_render(1, 0, &mut game.render),
-        Location::new(0.0, 0.0, 2.0),
+        Location::new(0.0, -1.0, 2.0).with_rot(90.0, -90.0),
     );
 
     game.world.add_object(sword);

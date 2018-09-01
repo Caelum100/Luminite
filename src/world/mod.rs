@@ -110,6 +110,12 @@ impl Location {
             yaw: 0.0,
         }
     }
+
+    pub fn with_rot(mut self, pitch: f32, yaw: f32) -> Self {
+        self.pitch = pitch;
+        self.yaw = yaw;
+        self
+    }
 }
 
 impl Hash for Location {
