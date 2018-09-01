@@ -300,7 +300,7 @@ pub fn create_obj_render<B: Backend>(
     let (buffer, memory) = buffer_util::empty_buffer::<B, MatrixBlock>(
         &ctx.device,
         &ctx.memory_types,
-        Properties::empty(),
+        Properties::CPU_VISIBLE,
         Usage::UNIFORM,
         1,
     );
