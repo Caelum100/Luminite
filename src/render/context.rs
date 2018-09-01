@@ -6,6 +6,18 @@ pub struct BufferMem<B: Backend> {
     pub element_count: usize,
 }
 
+impl<B: Backend> BufferMem<B> {
+    /// Creates a BufferMem with element count 1
+    /// and the specified buffer and memory.
+    pub fn new(buffer: B::Buffer, memory: B::Memory) -> BufferMem<B> {
+        BufferMem {
+            buffer,
+            memory,
+            element_count: 1,
+        }
+    }
+}
+
 /// Holds all values necessary to render to the screen.
 pub struct RenderContext<B: Backend> {
     /// The gfx-rs instance
@@ -43,11 +55,16 @@ pub struct RenderContext<B: Backend> {
     /// into this vector.
     pub models: Vec<ModelBuffer<B>>,
     pub memory_types: Vec<MemoryType>,
-    pub desc_set: B::DescriptorSet,
-    pub uniform_buffer: BufferMem<B>,
+    pub set_layout: B::DescriptorSetLayout,
 }
 
 pub struct ModelBuffer<B: Backend> {
     pub vertices: BufferMem<B>,
     pub indices: BufferMem<B>,
+}
+
+pub struct UniformBuffer<B: Backend> {
+    pub buffer: BufferMem<B>,
+    pub desc_set: B::DescriptorSet,
+    pub desc_pool: B::DescriptorPool,
 }

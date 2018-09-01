@@ -6,10 +6,15 @@ use std::path::Path;
 /// adding the memory and buffers to the `RenderContext`'s
 /// list of models
 pub fn upload_models(ctx: &mut RenderContext<back::Backend>) {
+    upload_model(ctx, &Path::new("assets/models/cube.obj"));
+    upload_model(ctx, &Path::new("assets/models/sword.obj"));
+}
+
+fn upload_model(ctx: &mut RenderContext<back::Backend>, path: &Path) {
     // For now, just load the models one by one
     // In the future, we may use JSON files to list
     // and load all models.
-    let (models, _) = tobj::load_obj(Path::new("assets/models/cube.obj")).unwrap();
+    let (models, _) = tobj::load_obj(path).unwrap();
     let (vertices, indices) = combine_models(models);
     let vertices_count = vertices.len();
     let indices_count = indices.len();

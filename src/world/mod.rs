@@ -4,58 +4,84 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
 
-pub struct World {
-    objects: HashMap<u32, Object>,
+pub struct World<B: gfx_hal::Backend> {
+    objects: HashMap<u32, Object<B>>,
+    object_id_counter: u32,
 }
 
-impl World {
-    pub fn add_object(&mut self, object: Object) {
+impl<B: gfx_hal::Backend> World<B> {
+    pub fn add_object(&mut self, object: Object<B>) {
         self.objects.insert(object.id, object);
     }
 
-    pub fn get_objs<'a>(&'a self) -> &'a HashMap<u32, Object> {
+    pub fn get_objs<'a>(&'a self) -> &'a HashMap<u32, Object<B>> {
         &self.objects
     }
 
-    pub fn get_obj(&mut self, id: u32) -> Option<&Object> {
+    pub fn get_objs_mut<'a>(&'a mut self) -> &'a mut HashMap<u32, Object<B>> {
+        &mut self.objects
+    }
+
+    pub fn get_obj(&mut self, id: u32) -> Option<&Object<B>> {
         self.objects.get(&id)
     }
 
-    pub fn remove_obj(&mut self, id: u32) -> Option<Object> {
+    pub fn remove_obj(&mut self, id: u32) -> Option<Object<B>> {
         self.objects.remove(&id)
     }
 
     /// Creates a new world with no objects.
-    pub fn new() -> World {
+    pub fn new() -> World<B> {
         World {
             objects: HashMap::new(),
+            object_id_counter: 0,
         }
+    }
+
+    pub fn alloc_obj_id(&mut self) -> u32 {
+        let result = self.object_id_counter;
+        self.object_id_counter += 1;
+        result
     }
 }
 
 /// An object in the world
-pub struct Object {
+pub struct Object<B: gfx_hal::Backend> {
     /// Unique object ID
     pub id: u32,
     /// The index into the model vector
-    pub model_index: usize,
+    pub render: render::ObjectRender<B>,
     /// The location in world space of the object
     pub location: Location,
 }
 
-impl Hash for Object {
+impl<B: gfx_hal::Backend> Hash for Object<B> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write_u32(self.id);
     }
 }
 
-impl PartialEq for Object {
+impl<B: gfx_hal::Backend> PartialEq for Object<B> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl Eq for Object {}
+impl<B: gfx_hal::Backend> Eq for Object<B> {}
+
+impl<B: gfx_hal::Backend> Object<B> {
+    pub fn new(
+        world: &mut World<B>,
+        render: render::ObjectRender<back::Backend>,
+        location: Location,
+    ) -> Object<back::Backend> {
+        Object {
+            id: world.alloc_obj_id(),
+            render,
+            location,
+        }
+    }
+}
 
 /// A three-dimensional location in world space
 /// using Euler angles (pitch and yaw).

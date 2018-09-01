@@ -27,6 +27,7 @@ use gfx_hal::{
     SwapchainConfig,
 };
 
+pub use self::context::{BufferMem, UniformBuffer};
 use gfx_hal::IndexType;
 use std::borrow::Borrow;
 
@@ -34,6 +35,13 @@ pub mod asset_load;
 pub mod buffer_util;
 pub mod context;
 pub mod factory;
+
+/// Render data associated with an object
+pub struct ObjectRender<B: Backend> {
+    pub model_index: usize,
+    pub uniform: UniformBuffer<B>,
+    pub shader_index: usize,
+}
 
 /// A three-dimensional vertex
 /// with a color.
@@ -110,7 +118,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
     ctx
 }
 
-pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
+pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<back::Backend>) {
     let device = &ctx.device;
     let image_views = &ctx.image_views;
     let frame_buffers = &ctx.frame_buffers;
@@ -141,17 +149,15 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
 
             // Draw each object in the world
             // TODO distance checks, instanced rendering
-            for object in world.get_objs().values() {
+            for object in world.get_objs_mut().values_mut() {
                 render_obj(
                     object,
                     &mut encoder,
                     &ctx.device,
                     &ctx.memory_types,
                     &ctx.models,
-                    &mut ctx.uniform_buffer,
                     &ctx.pipeline,
                     &ctx.pipeline_layout,
-                    &ctx.desc_set,
                 );
             }
         }
@@ -172,21 +178,27 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &World) {
         .unwrap();
 }
 
+/// Renders the object
+/// using its model buffer
+/// and uniform
 fn render_obj<B: Backend>(
-    object: &world::Object,
+    object: &mut world::Object<B>,
     encoder: &mut RenderPassInlineEncoder<B, Primary>,
     device: &B::Device,
     memory_types: &Vec<MemoryType>,
     models: &Vec<context::ModelBuffer<B>>,
-    uniform_buffer: &mut context::BufferMem<B>,
     pipeline: &B::GraphicsPipeline,
     pipeline_layout: &B::PipelineLayout,
-    desc_set: &B::DescriptorSet,
 ) {
-    let model_buffer = &models[object.model_index];
+    let model_buffer = &models[object.render.model_index];
     encoder.bind_vertex_buffers(0, vec![(&model_buffer.vertices.buffer, 0)]);
     encoder.bind_graphics_pipeline(pipeline);
-    encoder.bind_graphics_descriptor_sets(pipeline_layout, 0, vec![desc_set], &[]);
+    encoder.bind_graphics_descriptor_sets(
+        pipeline_layout,
+        0,
+        vec![&object.render.uniform.desc_set],
+        &[],
+    );
 
     let index_buffer_view = IndexBufferView {
         buffer: &model_buffer.indices.buffer,
@@ -199,7 +211,7 @@ fn render_obj<B: Backend>(
 
     buffer_util::fill_buffer::<B, MatrixBlock>(
         device,
-        &mut uniform_buffer.memory,
+        &mut object.render.uniform.buffer.memory,
         &[MatrixBlock { matrix }],
     );
 
@@ -210,7 +222,7 @@ fn render_obj<B: Backend>(
 
 /// Produces a model-view-projection matrix
 /// for the specified object.
-fn mvp_matrix(object: &world::Object) -> Mat4 {
+fn mvp_matrix<B: Backend>(object: &Object<B>) -> Mat4 {
     use glm::ext::*;
     let translation = translate(&num::one(), object.location.to_vec());
     // TODO rotation
@@ -264,5 +276,49 @@ fn viewport(extent: &Extent) -> Viewport {
             h: extent.height as i16,
         },
         depth: 0.0..1.0,
+    }
+}
+
+/// Creates a descriptor set and pool and uniform buffer/memory
+/// for the object. The model_index is the index into the RenderContext's
+/// model vector and the shader_index is not used yet (GitHub issue #7)
+pub fn create_obj_render<B: Backend>(
+    model_index: usize,
+    shader_index: usize,
+    ctx: &mut RenderContext<B>,
+) -> ObjectRender<B> {
+    // Allocate uniform buffer and init descriptor set
+    let mut desc_pool = ctx.device.create_descriptor_pool(
+        1,
+        &[DescriptorRangeDesc {
+            ty: DescriptorType::UniformBuffer,
+            count: 1,
+        }],
+    );
+    let desc_set = desc_pool.allocate_set(&ctx.set_layout).unwrap();
+
+    let (buffer, memory) = buffer_util::empty_buffer::<B, MatrixBlock>(
+        &ctx.device,
+        &ctx.memory_types,
+        Properties::empty(),
+        Usage::UNIFORM,
+        1,
+    );
+
+    ctx.device.write_descriptor_sets(vec![DescriptorSetWrite {
+        set: &desc_set,
+        binding: 0,
+        array_offset: 0,
+        descriptors: Some(Descriptor::Buffer(&buffer, None..None)),
+    }]);
+
+    ObjectRender {
+        model_index,
+        shader_index,
+        uniform: UniformBuffer {
+            buffer: BufferMem::new(buffer, memory),
+            desc_set,
+            desc_pool,
+        },
     }
 }

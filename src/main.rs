@@ -27,7 +27,7 @@ pub mod world;
 
 pub struct Game {
     pub render: render::context::RenderContext<back::Backend>,
-    pub world: World,
+    pub world: World<back::Backend>,
     pub running: bool,
 }
 
@@ -39,11 +39,21 @@ fn main() {
         running: true,
     };
 
-    game.world.add_object(Object {
-        id: 0,
-        model_index: 0,
-        location: Location::new(0.0, 0.0, 0.0),
-    });
+    let cube = Object::new(
+        &mut game.world,
+        render::create_obj_render(0, 0, &mut game.render),
+        Location::new(0.0, 0.0, 0.0),
+    );
+
+    game.world.add_object(cube);
+
+    let sword = Object::new(
+        &mut game.world,
+        render::create_obj_render(1, 0, &mut game.render),
+        Location::new(0.0, 0.0, 2.0),
+    );
+
+    game.world.add_object(sword);
 
     main_loop(&mut game);
 }
@@ -51,7 +61,7 @@ fn main() {
 fn main_loop(game: &mut Game) {
     while game.running {
         poll_events(game);
-        render::render(&mut game.render, &game.world);
+        render::render(&mut game.render, &mut game.world);
     }
 }
 
