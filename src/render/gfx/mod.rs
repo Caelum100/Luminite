@@ -41,15 +41,18 @@ pub mod buffer_util;
 pub mod context;
 pub mod factory;
 
+pub enum _RenderBackend {}
+impl RenderBackend for _RenderBackend {
+    type Backend = back::Backend;
+    type ObjectRender = ObjectRender<back::Backend>;
+    type RenderContext = RenderContext<back::Backend>;
+}
+
 /// Render data associated with an object
 pub struct ObjectRender<B: Backend> {
     pub model_index: usize,
     pub uniform: UniformBuffer<B>,
     pub shader_index: usize,
-}
-
-impl <B: Backend> ObjectRenderData for ObjectRender<B> {
-
 }
 
 /// A three-dimensional vertex
@@ -125,7 +128,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
     ctx
 }
 
-pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<back::Backend>) {
+pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<_RenderBackend>) {
     let device = &ctx.device;
     let image_views = &ctx.image_views;
     let frame_buffers = &ctx.frame_buffers;
@@ -191,14 +194,14 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<back::Ba
 /// Renders the object
 /// using its model buffer
 /// and uniform
-fn render_obj<B: Backend>(
-    object: &mut world::Object<B>,
-    encoder: &mut RenderPassInlineEncoder<B, Primary>,
-    device: &B::Device,
+fn render_obj(
+    object: &mut world::Object<_RenderBackend>,
+    encoder: &mut RenderPassInlineEncoder<back::Backend, Primary>,
+    device: &<back::Backend as Backend>::Device,
     memory_types: &Vec<MemoryType>,
-    models: &Vec<context::ModelBuffer<B>>,
-    pipeline: &B::GraphicsPipeline,
-    pipeline_layout: &B::PipelineLayout,
+    models: &Vec<context::ModelBuffer<back::Backend>>,
+    pipeline: &<back::Backend as Backend>::GraphicsPipeline,
+    pipeline_layout: &<back::Backend as Backend>::PipelineLayout,
 ) {
     let model_buffer = &models[object.render.model_index];
     encoder.bind_vertex_buffers(0, vec![(&model_buffer.vertices.buffer, 0)]);
@@ -219,45 +222,13 @@ fn render_obj<B: Backend>(
 
     let (matrix, modelview) = mvp_matrix(object);
 
-    buffer_util::fill_buffer::<B, MatrixBlock>(
+    buffer_util::fill_buffer::<back::Backend, MatrixBlock>(
         device,
         &mut object.render.uniform.buffer.memory,
         &[MatrixBlock { matrix, modelview }],
     );
 
     encoder.draw_indexed(0..(model_buffer.indices.element_count as u32), 0, 0..1);
-}
-
-/// Produces a model-view-projection matrix
-/// for the specified object.
-fn mvp_matrix<B: Backend>(object: &Object<B>) -> (Mat4, Mat4) {
-    use glm::ext::*;
-    let translation = translate(&num::one(), object.location.to_vec());
-
-    let rotation: Mat4 = rotate(
-        &num::one(),
-        radians(object.location.yaw),
-        vec3(0.0, 1.0, 0.0),
-    )
-        * rotate(
-            &num::one(),
-            radians(object.location.pitch),
-            vec3(1.0, 0.0, 0.0),
-        );
-
-    let scale: Mat4 = num::one();
-    let model = translation * rotation * scale;
-
-    // TODO moving camera
-    let view = look_at(
-        vec3(4.0, 3.0, 3.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, 1.0, 0.0),
-    );
-
-    // TODO view distance, custom aspect ratio
-    let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 128.0);
-    (projection * view * model, view * model)
 }
 
 /// Destroys the RenderContext.

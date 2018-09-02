@@ -1,15 +1,16 @@
 //! Stores data of objects and entities in the world.
 use super::*;
+use render::RenderBackend;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
 
-pub struct World {
-    objects: HashMap<u32, Object>,
+pub struct World<B: RenderBackend> {
+    objects: HashMap<u32, Object<B>>,
     object_id_counter: u32,
 }
 
-impl World {
+impl<B: RenderBackend> World<B> {
     pub fn add_object(&mut self, object: Object<B>) {
         self.objects.insert(object.id, object);
     }
@@ -31,7 +32,7 @@ impl World {
     }
 
     /// Creates a new world with no objects.
-    pub fn new() -> World {
+    pub fn new() -> World<B> {
         World {
             objects: HashMap::new(),
             object_id_counter: 0,
@@ -52,35 +53,31 @@ impl World {
 }
 
 /// An object in the world
-pub struct Object {
+pub struct Object<B: RenderBackend> {
     /// Unique object ID
     pub id: u32,
     /// The location in world space of the object
     pub location: Location,
-    /// The index into the model vector
-    pub render: render::ObjectRenderData,
+    /// The render data associated with this object
+    pub render: B::ObjectRender,
 }
 
-impl<B: gfx_hal::Backend> Hash for Object<B> {
+impl<B: RenderBackend> Hash for Object<B> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write_u32(self.id);
     }
 }
 
-impl<B: gfx_hal::Backend> PartialEq for Object<B> {
+impl<B: RenderBackend> PartialEq for Object<B> {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl<B: gfx_hal::Backend> Eq for Object<B> {}
+impl<B: RenderBackend> Eq for Object<B> {}
 
-impl<B: gfx_hal::Backend> Object<B> {
-    pub fn new(
-        world: &mut World<B>,
-        render: render::ObjectRender<back::Backend>,
-        location: Location,
-    ) -> Object<back::Backend> {
+impl<B: RenderBackend> Object<B> {
+    pub fn new(world: &mut World<B>, render: B::ObjectRender, location: Location) -> Object<B> {
         Object {
             id: world.alloc_obj_id(),
             render,
