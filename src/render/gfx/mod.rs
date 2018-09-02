@@ -32,6 +32,7 @@ use gfx_hal::{
     SwapchainConfig,
 };
 
+pub use self::asset_load::upload_model;
 pub use self::context::{BufferMem, UniformBuffer};
 use gfx_hal::IndexType;
 use std::borrow::Borrow;
@@ -46,6 +47,10 @@ impl RenderBackend for _RenderBackend {
     type Backend = back::Backend;
     type ObjectRender = ObjectRender<back::Backend>;
     type RenderContext = RenderContext<back::Backend>;
+
+    fn upload_model(ctx: &mut Self::RenderContext, models: Vec<tobj::Model>) {
+        upload_model(ctx, models);
+    }
 }
 
 /// Render data associated with an object
@@ -53,33 +58,6 @@ pub struct ObjectRender<B: Backend> {
     pub model_index: usize,
     pub uniform: UniformBuffer<B>,
     pub shader_index: usize,
-}
-
-/// A three-dimensional vertex
-/// with a position and normal.
-#[derive(Clone, Copy)]
-pub struct Vertex {
-    pub a_position: Vec3,
-    pub a_normal: Vec3,
-}
-
-impl Vertex {
-    /// Produces a vertex with the specified
-    /// positions and normals.
-    pub fn new(x: f32, y: f32, z: f32, nx: f32, ny: f32, nz: f32) -> Self {
-        Vertex {
-            a_position: vec3(x, y, z),
-            a_normal: vec3(nx, ny, nz),
-        }
-    }
-}
-
-/// Uniform
-#[derive(Clone, Copy)]
-struct MatrixBlock {
-    /// The full MVP matrix
-    matrix: Mat4,
-    modelview: Mat4,
 }
 
 pub fn create_context() -> RenderContext<back::Backend> {
@@ -124,7 +102,7 @@ pub fn create_context() -> RenderContext<back::Backend> {
         .with_dimensions(720, 480);
 
     let mut ctx = builder.build();
-    asset_load::upload_models(&mut ctx);
+    upload_models::<_RenderBackend>(&mut ctx);
     ctx
 }
 

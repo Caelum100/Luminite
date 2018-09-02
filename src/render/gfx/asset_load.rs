@@ -2,19 +2,7 @@
 use super::*;
 use std::path::Path;
 
-/// Uploads vertex buffer data for models to the GPU,
-/// adding the memory and buffers to the `RenderContext`'s
-/// list of models
-pub fn upload_models(ctx: &mut RenderContext<back::Backend>) {
-    upload_model(ctx, &Path::new("assets/models/cube.obj"));
-    upload_model(ctx, &Path::new("assets/models/sword.obj"));
-}
-
-fn upload_model(ctx: &mut RenderContext<back::Backend>, path: &Path) {
-    // For now, just load the models one by one
-    // In the future, we may use JSON files to list
-    // and load all models.
-    let (models, _) = tobj::load_obj(path).unwrap();
+pub fn upload_model(ctx: &mut RenderContext<back::Backend>, models: Vec<tobj::Model>) {
     let (vertices, indices) = combine_models(models);
     let vertices_count = vertices.len();
     let indices_count = indices.len();
@@ -47,43 +35,4 @@ fn upload_model(ctx: &mut RenderContext<back::Backend>, path: &Path) {
             element_count: indices_count,
         },
     });
-}
-
-/// Combines all models into one vector of vertices and indices.
-fn combine_models(mut models: Vec<tobj::Model>) -> (Vec<Vertex>, Vec<u32>) {
-    let mut vertices = Vec::new();
-    let mut indices = Vec::new();
-
-    for model in models.iter_mut() {
-        let mut mesh = &mut model.mesh;
-        vertices.append(&mut positions_to_vertices(&mesh.positions, &mesh.normals));
-        indices.append(&mut mesh.indices);
-    }
-    (vertices, indices)
-}
-
-/// Converts vectors of floats to vectors
-/// of vertices. The length of the `positions`
-/// array must be a multiple of three.
-fn positions_to_vertices(positions: &Vec<f32>, normals: &Vec<f32>) -> Vec<Vertex> {
-    if positions.len() % 3 != 0 {
-        panic!("Length of position array must be a multiple of three");
-    }
-
-    let mut result = Vec::new();
-    for index in 0..positions.len() {
-        if index % 3 != 0 {
-            continue;
-        }
-        result.push(Vertex::new(
-            positions[index],
-            positions[index + 1],
-            positions[index + 2],
-            normals[index],
-            normals[index + 1],
-            normals[index + 2],
-        ));
-    }
-
-    result
 }
