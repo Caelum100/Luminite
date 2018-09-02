@@ -50,6 +50,18 @@ impl RenderBackend for _RenderBackend {
     fn upload_model(ctx: &mut Self::RenderContext, models: Vec<tobj::Model>) {
         upload_model(ctx, models);
     }
+
+    fn create_context(title: &str, dimensions: (u32, u32)) -> Self::RenderContext {
+        _create_context(title, dimensions)
+    }
+}
+
+/// Uniform
+#[derive(Clone, Copy)]
+struct MatrixBlock {
+    /// The full MVP matrix
+    matrix: Mat4,
+    modelview: Mat4,
 }
 
 /// Render data associated with an object
@@ -59,7 +71,7 @@ pub struct ObjectRender<B: Backend> {
     pub shader_index: usize,
 }
 
-pub fn create_context(title: &str, dimensions: (u32, u32)) -> RenderContext<back::Backend> {
+pub fn _create_context(title: &str, dimensions: (u32, u32)) -> RenderContext<back::Backend> {
     let pipeline_layout = [DescriptorSetLayoutBinding {
         binding: 0,
         ty: DescriptorType::UniformBuffer,

@@ -42,7 +42,7 @@ pub struct Game<B: RenderBackend> {
 fn main() {
     simple_logger::init().unwrap();
     let mut game: Game<_RenderBackend> = Game {
-        render: render::create_context("Luminite", (720, 480)),
+        render: render::create_context::<_RenderBackend>("Luminite", (720, 480)),
         world: World::new(),
         running: true,
     };
@@ -75,12 +75,28 @@ fn main_loop(game: &mut Game<_RenderBackend>) {
 }
 
 /// Polls events
+#[cfg(not(feature = "gl"))]
 fn poll_events(game: &mut Game<_RenderBackend>) {
     let mut running = true;
     let events_loop = &mut game.render.events_loop;
     events_loop.poll_events(|event| match event {
         Event::WindowEvent { event, .. } => match event {
             WindowEvent::CloseRequested => running = false,
+            _ => (),
+        },
+        _ => (),
+    });
+    game.running = running;
+}
+
+/// Polls events
+#[cfg(feature = "gl")]
+fn poll_events(game: &mut Game<_RenderBackend>) {
+    let mut running = true;
+    let events_loop = &mut game.render.events_loop;
+    events_loop.poll_events(|event| match event {
+        glium::glutin::Event::WindowEvent { event, .. } => match event {
+            glium::glutin::WindowEvent::CloseRequested => running = false,
             _ => (),
         },
         _ => (),

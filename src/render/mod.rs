@@ -19,6 +19,7 @@ pub trait RenderBackend {
     type RenderContext;
 
     fn upload_model(ctx: &mut Self::RenderContext, models: Vec<tobj::Model>);
+    fn create_context(title: &str, dimensions: (u32, u32)) -> Self::RenderContext;
 }
 
 /// A three-dimensional vertex
@@ -38,14 +39,6 @@ impl Vertex {
             a_normal: vec3(nx, ny, nz),
         }
     }
-}
-
-/// Uniform
-#[derive(Clone, Copy)]
-struct MatrixBlock {
-    /// The full MVP matrix
-    matrix: Mat4,
-    modelview: Mat4,
 }
 
 /// Produces a model-view-projection matrix
@@ -130,4 +123,10 @@ pub fn positions_to_vertices(positions: &Vec<f32>, normals: &Vec<f32>) -> Vec<Ve
     }
 
     result
+}
+
+pub fn create_context<B: RenderBackend>(title: &str, dimensions: (u32, u32)) -> B::RenderContext {
+    let mut ctx = B::create_context(title, dimensions);
+    upload_models::<B>(&mut ctx);
+    ctx
 }

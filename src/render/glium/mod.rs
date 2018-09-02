@@ -1,9 +1,13 @@
 //! OpenGL rendering backend using glium.
 extern crate spirv_cross as spv;
+
+pub mod asset_load;
+
 use self::spv::{glsl, spirv};
 use super::*;
 use glium;
 use glium::glutin;
+use glium::Surface;
 
 pub enum _RenderBackend {}
 
@@ -22,37 +26,37 @@ impl RenderBackend for _RenderBackend {
     type RenderContext = RenderContext;
 
     fn upload_model(ctx: &mut RenderContext, models: Vec<tobj::Model>) {
-        unimplemented!()
+        asset_load::upload_model(ctx, models);
+    }
+
+    /// Creates a `RenderContext` with the specified
+    /// window title and dimensions
+    fn create_context(title: &str, dimensions: (u32, u32)) -> RenderContext {
+        let mut events_loop = glutin::EventsLoop::new();
+        let window = glutin::WindowBuilder::new()
+            .with_title(title)
+            .with_dimensions(dimensions.into());
+        let context = glutin::ContextBuilder::new()
+            .with_depth_buffer(24)
+            .with_vsync(true);
+        let display = glium::Display::new(window, context, &events_loop).unwrap();
+        let program = compile_program(&display);
+
+        RenderContext {
+            display,
+            models: Vec::new(),
+            program,
+            events_loop,
+        }
     }
 }
 
 /// Holds state data for OpenGL
 pub struct RenderContext {
-    display: glium::Display,
-    models: Vec<ModelBuffer>,
-    program: glium::Program,
-    events_loop: glutin::EventsLoop,
-}
-
-/// Creates a `RenderContext` with the specified
-/// window title and dimensions
-pub fn create_context(title: &str, dimensions: (u32, u32)) -> RenderContext {
-    let mut events_loop = glutin::EventsLoop::new();
-    let window = glutin::WindowBuilder::new()
-        .with_title(title)
-        .with_dimensions(dimensions.into());
-    let context = glutin::ContextBuilder::new()
-        .with_depth_buffer(24)
-        .with_vsync(true);
-    let display = glium::Display::new(window, context, &events_loop).unwrap();
-    let program = compile_program(&display);
-
-    RenderContext {
-        display,
-        models: Vec::new(),
-        program,
-        events_loop,
-    }
+    pub display: glium::Display,
+    pub models: Vec<ModelBuffer>,
+    pub program: glium::Program,
+    pub events_loop: glutin::EventsLoop,
 }
 
 pub fn render(ctx: &mut RenderContext, world: &mut World<_RenderBackend>) {
@@ -61,15 +65,19 @@ pub fn render(ctx: &mut RenderContext, world: &mut World<_RenderBackend>) {
     for object in world.get_objs().values() {
         render_obj(ctx, &mut frame, object);
     }
-    frame.finish();
+    frame.finish().unwrap();
 }
 
 fn render_obj(ctx: &RenderContext, frame: &mut glium::Frame, object: &Object<_RenderBackend>) {
     let (matrix, modelview) = mvp_matrix(object);
-    let uniforms = unsafe {
+    let (matrix, modelview) = unsafe {
         let matrix = std::mem::transmute::<_, [[f32; 4]; 4]>(matrix);
         let modelview = std::mem::transmute::<_, [[f32; 4]; 4]>(modelview);
-        uniform!(matrix, modelview,)
+        (matrix, modelview)
+    };
+    let uniforms = uniform! {
+        matrix: matrix,
+        modelview: modelview
     };
 
     let draw_params = glium::DrawParameters {
@@ -114,22 +122,13 @@ pub struct ObjectRender {
 }
 
 fn compile_program(display: &glium::Display) -> glium::Program {
-    let vertex_mod =
-        spirv::Module::from_words(include_bytes!("../../../assets/shaders/model.vert.spv"));
-    let vertex_glsl = spirv::Ast::<glsl::Target>::parse(&vertex_mod)
-        .unwrap()
-        .compile()
-        .unwrap();
-    debug!("Loaded GLSL shader from SPIR-V bytecode: {}", glsl);
-    let frag_mod =
-        spirv::Module::from_words(include_bytes!("../../../assets/shaders/model.frag.spv"));
-    let frag_glsl = spirv::Ast::<glsl::Target>::parse(&frag_mod)
-        .unwrap()
-        .compile()
-        .unwrap();
-    debug!("Loaded GLSL shader from SPIR-V bytecode: {}", glsl);
-
-    glium::Program::from_source(&display, vertex_glsl.as_str(), frag_glsl.as_str(), None).unwrap()
+    // Load from GLSL instead of compiled SPIR-V for now
+    glium::Program::from_source(
+        display,
+        include_str!("../../shaders/model.glium.vert"),
+        include_str!("../../shaders/model.frag"),
+        None,
+    ).unwrap()
 }
 
 fn create_vertex(vertex: Vertex) -> _Vertex {
