@@ -21,27 +21,26 @@ gl = ["glium"]
 
 [dependencies.gfx-hal]
 git = "https://github.com/gfx-rs/gfx"
-rev = "3cd05e49"
+rev = "5f9f5237"
 optional = true
 
 [target.'cfg(not(target_os = "macos"))'.dependencies.gfx-backend-vulkan]
 git = "https://github.com/gfx-rs/gfx"
-rev = "3cd05e49"
+rev = "5f9f5237"
 optional = true
 
 [target.'cfg(windows)'.dependencies.gfx-backend-dx12]
 git = "https://github.com/gfx-rs/gfx"
-rev = "3cd05e49"
+rev = "5f9f5237"
 optional = true
 
 [target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
 git = "https://github.com/gfx-rs/gfx"
-rev = "3cd05e49"
+rev = "5f9f5237"
 optional = true
 
 [dependencies.glium]
 git = "https://github.com/glium/glium"
-optional = true
 
 [build-dependencies]
 glsl-to-spirv = "0.1.6"
