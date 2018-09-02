@@ -17,6 +17,11 @@ matrix:
     - TARGET_NAME=macos
     os: osx
   - env:
+      - TARGET=x86_64-apple-darwin
+      - FEATURES=gl
+      - TARGET_NAME=macos-legacy
+    os: osx
+  - env:
       - TARGET=x86_64-unknown-linux-gnu
       - FEATURES=vulkan
       - TARGET_NAME=linux

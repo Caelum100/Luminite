@@ -9,13 +9,15 @@ extern crate tobj;
 
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;
-#[cfg(feature = "gl")]
-extern crate gfx_backend_gl as back;
 #[cfg(feature = "metal")]
 extern crate gfx_backend_metal as back;
 #[cfg(all(feature = "vulkan", not(any(feature = "dx12", feature = "metal"))))]
 extern crate gfx_backend_vulkan as back;
+#[cfg(feature = "gl")]
+#[macro_use]
+extern crate glium;
 
+#[cfg(not(feature = "gl"))]
 extern crate gfx_hal;
 
 pub use glm::*;
@@ -23,20 +25,24 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use winit::{Event, WindowEvent};
 use world::{Location, Object, World};
+// Trait
+use render::RenderBackend;
+// Type
+use render::_RenderBackend;
 
 pub mod render;
 pub mod world;
 
-pub struct Game {
-    pub render: render::context::RenderContext<back::Backend>,
-    pub world: World<back::Backend>,
+pub struct Game<B: RenderBackend> {
+    pub render: B::RenderContext,
+    pub world: World<B>,
     pub running: bool,
 }
 
 fn main() {
     simple_logger::init().unwrap();
-    let mut game = Game {
-        render: render::create_context(),
+    let mut game: Game<_RenderBackend> = Game {
+        render: render::create_context::<_RenderBackend>("Luminite", (720, 480)),
         world: World::new(),
         running: true,
     };
@@ -60,7 +66,7 @@ fn main() {
     main_loop(&mut game);
 }
 
-fn main_loop(game: &mut Game) {
+fn main_loop(game: &mut Game<_RenderBackend>) {
     while game.running {
         poll_events(game);
         game.world.tick();
@@ -69,12 +75,28 @@ fn main_loop(game: &mut Game) {
 }
 
 /// Polls events
-fn poll_events(game: &mut Game) {
+#[cfg(not(feature = "gl"))]
+fn poll_events(game: &mut Game<_RenderBackend>) {
     let mut running = true;
     let events_loop = &mut game.render.events_loop;
     events_loop.poll_events(|event| match event {
         Event::WindowEvent { event, .. } => match event {
             WindowEvent::CloseRequested => running = false,
+            _ => (),
+        },
+        _ => (),
+    });
+    game.running = running;
+}
+
+/// Polls events
+#[cfg(feature = "gl")]
+fn poll_events(game: &mut Game<_RenderBackend>) {
+    let mut running = true;
+    let events_loop = &mut game.render.events_loop;
+    events_loop.poll_events(|event| match event {
+        glium::glutin::Event::WindowEvent { event, .. } => match event {
+            glium::glutin::WindowEvent::CloseRequested => running = false,
             _ => (),
         },
         _ => (),

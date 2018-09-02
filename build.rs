@@ -20,6 +20,9 @@ fn main() -> Result<(), Box<Error>> {
 
         if entry.file_type()?.is_file() {
             let in_path = entry.path();
+            if in_path.to_str().unwrap().contains("glium") {
+                continue;
+            }
 
             // Pick between vertex and fragment shader
             let shader_type = in_path.extension().and_then(|ext| {

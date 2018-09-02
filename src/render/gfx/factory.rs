@@ -5,14 +5,12 @@ use super::*;
 /// in a clean manner
 pub struct RenderBuilder<'a, B: Backend> {
     /// The gfx-rs instance
-    #[cfg(not(feature = "gl"))]
     instance: Option<back::Instance>,
     /// The logical device selected for rendering
     device: Option<B::Device>,
     /// The events loop associated with the window
     events_loop: Option<winit::EventsLoop>,
     /// The window the game is open in
-    #[cfg(not(feature = "gl"))]
     window: Option<winit::Window>,
     /// The surface for rendering to
     surface: Option<B::Surface>,
@@ -57,11 +55,9 @@ pub struct RenderBuilder<'a, B: Backend> {
 impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
     fn default() -> Self {
         RenderBuilder {
-            #[cfg(not(feature = "gl"))]
             instance: None,
             device: None,
             events_loop: None,
-            #[cfg(not(feature = "gl"))]
             window: None,
             surface: None,
             queue_group: None,
@@ -144,15 +140,10 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         self.finish()
     }
 
-    #[cfg(not(feature = "gl"))]
     fn build_instance(&mut self) {
         self.instance = Some(back::Instance::create(self.title, 1));
     }
 
-    #[cfg(feature = "gl")]
-    fn build_instance(&mut self) {}
-
-    #[cfg(not(feature = "gl"))]
     fn build_device_and_queue_group_and_surface(&mut self) {
         self.surface = Some(
             self.instance
@@ -202,57 +193,6 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         self.queue_group = Some(queue_group);
     }
 
-    #[cfg(feature = "gl")]
-    fn build_device_and_queue_group_and_surface(&mut self) {
-        let (mut adapters, mut surface) = {
-            let window = {
-                let builder = back::config_context(
-                    back::glutin::ContextBuilder::new(),
-                    Format::Rgba8Srgb,
-                    None,
-                ).with_vsync(true);
-                let _window = back::glutin::WindowBuilder::new()
-                    .with_title(self.title)
-                    .with_dimensions(self.dimensions.into());
-                back::glutin::GlWindow::new(_window, builder, self.events_loop.as_ref().unwrap())
-                    .unwrap()
-            };
-
-            let surface = back::Surface::from_window(window);
-            let adapters = surface.enumerate_adapters();
-            (adapters, surface)
-        };
-
-        let mut adapter = adapters.remove(0);
-        let (device, queue_group) = adapter
-            .open_with::<_, Graphics>(1, |family| surface.supports_queue_family(family))
-            .unwrap();
-        self.adapter = Some(adapter);
-        let physical_device = &self.adapter.as_ref().unwrap().physical_device;
-        let (caps, formats, _) = surface.compatibility(physical_device);
-        self.caps = Some(caps);
-
-        self.memory_types = physical_device.memory_properties().memory_types;
-
-        self.surface_color_format = {
-            // Pick color format
-            match formats {
-                Some(choices) => Some(
-                    choices
-                        .into_iter()
-                        .find(|format| format.base_format().1 == ChannelType::Srgb)
-                        .unwrap(),
-                ),
-                None => Some(Format::Rgba8Srgb),
-            }
-        };
-
-        self.device = Some(device);
-        self.queue_group = Some(queue_group);
-        self.surface = Some(surface);
-    }
-
-    #[cfg(not(feature = "gl"))]
     fn build_window_and_events_loop(&mut self) {
         self.events_loop = Some(winit::EventsLoop::new());
         self.window = Some(
@@ -262,11 +202,6 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 .build(self.events_loop.as_ref().unwrap())
                 .unwrap(),
         );
-    }
-
-    #[cfg(feature = "gl")]
-    fn build_window_and_events_loop(&mut self) {
-        self.events_loop = Some(winit::EventsLoop::new());
     }
 
     fn build_command_pool(&mut self) {
@@ -549,11 +484,9 @@ impl<'a> RenderBuilder<'a, back::Backend> {
         let frame_fence = self.device.as_ref().unwrap().create_fence(false);
 
         RenderContext {
-            #[cfg(not(feature = "gl"))]
             instance: self.instance.unwrap(),
             device: self.device.unwrap(),
             events_loop: self.events_loop.unwrap(),
-            #[cfg(not(feature = "gl"))]
             window: self.window.unwrap(),
             surface: self.surface.unwrap(),
             queue_group: self.queue_group.unwrap(),
