@@ -14,8 +14,10 @@ extern crate gfx_backend_metal as back;
 #[cfg(all(feature = "vulkan", not(any(feature = "dx12", feature = "metal"))))]
 extern crate gfx_backend_vulkan as back;
 #[cfg(feature = "gl")]
+#[macro_use]
 extern crate glium;
 
+#[cfg(not(feature = "gl"))]
 extern crate gfx_hal;
 
 pub use glm::*;
@@ -40,7 +42,7 @@ pub struct Game<B: RenderBackend> {
 fn main() {
     simple_logger::init().unwrap();
     let mut game: Game<_RenderBackend> = Game {
-        render: render::create_context(),
+        render: render::create_context("Luminite", (720, 480)),
         world: World::new(),
         running: true,
     };

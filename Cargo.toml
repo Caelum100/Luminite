@@ -14,14 +14,15 @@ rand = "0.5.5"
 num = "0.2.0"
 
 [features]
-vulkan = ["gfx-backend-vulkan"]
-dx12 = ["gfx-backend-dx12"]
-metal = ["gfx-backend-metal"]
-gl = ["glium"]
+vulkan = ["gfx-backend-vulkan", "gfx-hal"]
+dx12 = ["gfx-backend-dx12", "gfx-hal"]
+metal = ["gfx-backend-metal", "gfx-hal"]
+gl = ["glium", "spirv_cross"]
 
 [dependencies.gfx-hal]
 git = "https://github.com/gfx-rs/gfx"
 rev = "3cd05e49"
+optional = true
 
 [target.'cfg(not(target_os = "macos"))'.dependencies.gfx-backend-vulkan]
 git = "https://github.com/gfx-rs/gfx"
@@ -40,6 +41,10 @@ optional = true
 
 [dependencies.glium]
 git = "https://github.com/glium/glium"
+optional = true
+
+[dependencies.spirv_cross]
+version = "0.10.1"
 optional = true
 
 [build-dependencies]

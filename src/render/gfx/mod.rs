@@ -32,7 +32,7 @@ use gfx_hal::{
     SwapchainConfig,
 };
 
-pub use self::asset_load::upload_model;
+use self::asset_load::upload_model;
 pub use self::context::{BufferMem, UniformBuffer};
 use gfx_hal::IndexType;
 use std::borrow::Borrow;
@@ -44,7 +44,6 @@ pub mod factory;
 
 pub enum _RenderBackend {}
 impl RenderBackend for _RenderBackend {
-    type Backend = back::Backend;
     type ObjectRender = ObjectRender<back::Backend>;
     type RenderContext = RenderContext<back::Backend>;
 
@@ -60,7 +59,7 @@ pub struct ObjectRender<B: Backend> {
     pub shader_index: usize,
 }
 
-pub fn create_context() -> RenderContext<back::Backend> {
+pub fn create_context(title: &str, dimensions: (u32, u32)) -> RenderContext<back::Backend> {
     let pipeline_layout = [DescriptorSetLayoutBinding {
         binding: 0,
         ty: DescriptorType::UniformBuffer,
@@ -94,12 +93,12 @@ pub fn create_context() -> RenderContext<back::Backend> {
     };
 
     let builder = RenderBuilder::new()
-        .with_title("Luminite")
+        .with_title(title)
         .with_vertex_shader(include_bytes!("../../../assets/shaders/model.vert.spv"))
         .with_fragment_shader(include_bytes!("../../../assets/shaders/model.frag.spv"))
         .with_pipeline(&pipeline_layout)
         .with_vertex_attr(vertex_desc, vec![position_attr, normal_attr])
-        .with_dimensions(720, 480);
+        .with_dimensions(dimensions.0, dimensions.1);
 
     let mut ctx = builder.build();
     upload_models::<_RenderBackend>(&mut ctx);

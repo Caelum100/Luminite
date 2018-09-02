@@ -1,16 +1,19 @@
 //! Code shared between all rendering backends
 #[cfg(not(feature = "gl"))]
 pub mod gfx;
+#[cfg(feature = "gl")]
+pub mod glium;
 
 #[cfg(not(feature = "gl"))]
 pub use self::gfx::*;
+#[cfg(feature = "gl")]
+pub use self::glium::*;
 
 use super::*;
 use std::path::Path;
 
 /// A render backend.
 pub trait RenderBackend {
-    type Backend;
     /// Render data associated with an object
     type ObjectRender;
     type RenderContext;
