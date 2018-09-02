@@ -41,6 +41,7 @@ optional = true
 
 [dependencies.glium]
 git = "https://github.com/glium/glium"
+optional = true
 
 [build-dependencies]
 glsl-to-spirv = "0.1.6"
