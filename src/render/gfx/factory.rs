@@ -1,6 +1,6 @@
 //! Includes factory functions for building RenderContexts.
 use super::*;
-use gfx_hal::{Instance, Surface, PhysicalDevice};
+use gfx_hal::{Instance, PhysicalDevice, Surface};
 
 /// Struct used to build RenderContexts
 /// in a clean manner

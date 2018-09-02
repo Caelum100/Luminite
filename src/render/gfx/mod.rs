@@ -12,7 +12,7 @@ use gfx_hal::{
     format::{Aspects, ChannelType, Format, Swizzle},
     image,
     image::{Access, Extent, Layout, Size, SubresourceRange, ViewKind},
-    memory::{Properties},
+    memory::Properties,
     pass::{
         Attachment, AttachmentLoadOp, AttachmentOps, AttachmentStoreOp, Subpass, SubpassDependency,
         SubpassDesc, SubpassRef,
@@ -27,9 +27,8 @@ use gfx_hal::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
         PipelineStage, Rasterizer, Rect, Viewport,
     },
-    Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, MemoryType,
-    Primitive, QueueGroup, Submission, SwapImageIndex, Swapchain,
-    SwapchainConfig,
+    Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, MemoryType, Primitive,
+    QueueGroup, Submission, SwapImageIndex, Swapchain, SwapchainConfig,
 };
 
 use self::asset_load::upload_model;

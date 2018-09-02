@@ -91,9 +91,17 @@ pub fn combine_models(mut models: Vec<tobj::Model>) -> (Vec<Vertex>, Vec<u32>) {
     let mut vertices = Vec::new();
     let mut indices = Vec::new();
 
-    for model in models.iter_mut() {
-        let mut mesh = &mut model.mesh;
+    while models.len() != 0 {
+        let model = models.remove(0);
+        let mut mesh = model.mesh;
+
+        // If there are multiple models, we need
+        // to offset the indices
+        let offset = vertices.len() as u32;
+        mesh.indices = mesh.indices.iter().map(|el| el + offset).collect();
+
         vertices.append(&mut positions_to_vertices(&mesh.positions, &mesh.normals));
+
         indices.append(&mut mesh.indices);
     }
     (vertices, indices)
