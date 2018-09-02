@@ -123,7 +123,7 @@ fn compile_program(display: &glium::Display) -> glium::Program {
     glium::Program::from_source(
         display,
         include_str!("../../shaders/model.glium.vert"),
-        include_str!("../../shaders/model.frag"),
+        include_str!("../../shaders/model.glium.frag"),
         None,
     ).unwrap()
 }
