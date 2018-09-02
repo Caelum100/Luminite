@@ -17,7 +17,7 @@ num = "0.2.0"
 vulkan = ["gfx-backend-vulkan", "gfx-hal"]
 dx12 = ["gfx-backend-dx12", "gfx-hal"]
 metal = ["gfx-backend-metal", "gfx-hal"]
-gl = ["glium", "spirv_cross"]
+gl = ["glium"]
 
 [dependencies.gfx-hal]
 git = "https://github.com/gfx-rs/gfx"
@@ -41,10 +41,6 @@ optional = true
 
 [dependencies.glium]
 git = "https://github.com/glium/glium"
-optional = true
-
-[dependencies.spirv_cross]
-version = "0.10.1"
 optional = true
 
 [build-dependencies]

@@ -1,9 +1,6 @@
 //! OpenGL rendering backend using glium.
-extern crate spirv_cross as spv;
-
 pub mod asset_load;
 
-use self::spv::{glsl, spirv};
 use super::*;
 use glium;
 use glium::glutin;

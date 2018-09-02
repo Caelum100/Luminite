@@ -544,7 +544,6 @@ dependencies = [
  "num 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "simple_logger 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "spirv_cross 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tobj 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "winit 0.17.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
