@@ -29,7 +29,7 @@ impl RenderBackend for _RenderBackend {
     /// Creates a `RenderContext` with the specified
     /// window title and dimensions
     fn create_context(title: &str, dimensions: (u32, u32)) -> RenderContext {
-        let mut events_loop = glutin::EventsLoop::new();
+        let events_loop = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new()
             .with_title(title)
             .with_dimensions(dimensions.into());
@@ -100,7 +100,7 @@ fn render_obj(ctx: &RenderContext, frame: &mut glium::Frame, object: &Object<_Re
 pub fn create_obj_render(
     model_index: usize,
     _shader_index: usize, // Not yet used (see #7)
-    ctx: &RenderContext,
+    _ctx: &RenderContext,
 ) -> ObjectRender {
     ObjectRender { model_index }
 }
@@ -126,8 +126,4 @@ fn compile_program(display: &glium::Display) -> glium::Program {
         include_str!("../../shaders/model.frag"),
         None,
     ).unwrap()
-}
-
-fn create_vertex(vertex: Vertex) -> _Vertex {
-    unsafe { std::mem::transmute(vertex) }
 }

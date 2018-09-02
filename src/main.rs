@@ -1,6 +1,5 @@
 extern crate glm;
 extern crate winit;
-#[macro_use]
 extern crate log;
 extern crate num;
 extern crate rand;
@@ -21,9 +20,6 @@ extern crate glium;
 extern crate gfx_hal;
 
 pub use glm::*;
-use std::cell::RefCell;
-use std::rc::Rc;
-use winit::{Event, WindowEvent};
 use world::{Location, Object, World};
 // Trait
 use render::RenderBackend;
@@ -80,8 +76,8 @@ fn poll_events(game: &mut Game<_RenderBackend>) {
     let mut running = true;
     let events_loop = &mut game.render.events_loop;
     events_loop.poll_events(|event| match event {
-        Event::WindowEvent { event, .. } => match event {
-            WindowEvent::CloseRequested => running = false,
+        winit::Event::WindowEvent { event, .. } => match event {
+            winit::WindowEvent::CloseRequested => running = false,
             _ => (),
         },
         _ => (),

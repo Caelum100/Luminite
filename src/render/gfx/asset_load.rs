@@ -1,6 +1,5 @@
 //! Module for loading assets from files.
 use super::*;
-use std::path::Path;
 
 pub fn upload_model(ctx: &mut RenderContext<back::Backend>, models: Vec<tobj::Model>) {
     let (vertices, indices) = combine_models(models);

@@ -12,7 +12,7 @@ use gfx_hal::{
     format::{Aspects, ChannelType, Format, Swizzle},
     image,
     image::{Access, Extent, Layout, Size, SubresourceRange, ViewKind},
-    memory::{Barrier, Dependencies, Properties},
+    memory::{Properties},
     pass::{
         Attachment, AttachmentLoadOp, AttachmentOps, AttachmentStoreOp, Subpass, SubpassDependency,
         SubpassDesc, SubpassRef,
@@ -27,8 +27,8 @@ use gfx_hal::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
         PipelineStage, Rasterizer, Rect, Viewport,
     },
-    Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, Instance, MemoryType,
-    PhysicalDevice, Primitive, QueueGroup, Submission, Surface, SwapImageIndex, Swapchain,
+    Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, MemoryType,
+    Primitive, QueueGroup, Submission, SwapImageIndex, Swapchain,
     SwapchainConfig,
 };
 
@@ -58,6 +58,10 @@ impl RenderBackend for _RenderBackend {
 
 /// Uniform
 #[derive(Clone, Copy)]
+// Although the compiler seems
+// to think the fields here are never
+// used, they are.
+#[allow(dead_code)]
 struct MatrixBlock {
     /// The full MVP matrix
     matrix: Mat4,
@@ -119,7 +123,6 @@ pub fn _create_context(title: &str, dimensions: (u32, u32)) -> RenderContext<bac
 
 pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<_RenderBackend>) {
     let device = &ctx.device;
-    let image_views = &ctx.image_views;
     let frame_buffers = &ctx.frame_buffers;
     let (frame_fence, frame_semaphore) = (&ctx.frame_fence, &ctx.frame_semaphore);
 
@@ -156,7 +159,6 @@ pub fn render(ctx: &mut RenderContext<back::Backend>, world: &mut World<_RenderB
                     object,
                     &mut encoder,
                     &ctx.device,
-                    &ctx.memory_types,
                     &ctx.models,
                     &ctx.pipeline,
                     &ctx.pipeline_layout,
@@ -187,7 +189,6 @@ fn render_obj(
     object: &mut world::Object<_RenderBackend>,
     encoder: &mut RenderPassInlineEncoder<back::Backend, Primary>,
     device: &<back::Backend as Backend>::Device,
-    memory_types: &Vec<MemoryType>,
     models: &Vec<context::ModelBuffer<back::Backend>>,
     pipeline: &<back::Backend as Backend>::GraphicsPipeline,
     pipeline_layout: &<back::Backend as Backend>::PipelineLayout,

@@ -1,5 +1,6 @@
 //! Includes factory functions for building RenderContexts.
 use super::*;
+use gfx_hal::{Instance, Surface, PhysicalDevice};
 
 /// Struct used to build RenderContexts
 /// in a clean manner
@@ -20,18 +21,6 @@ pub struct RenderBuilder<'a, B: Backend> {
     command_pool: Option<CommandPool<B, Graphics>>,
     /// The current render pass (changed upon window resize)
     render_pass: Option<B::RenderPass>,
-    /// The default graphics pipeline, which includes vertex and fragment shaders
-    pipeline: Option<B::GraphicsPipeline>,
-    /// The swapchain
-    swapchain: Option<B::Swapchain>,
-    /// Image views
-    image_views: Option<Vec<B::ImageView>>,
-    /// Frame buffers
-    frame_buffers: Option<Vec<B::Framebuffer>>,
-    /// Semaphore to wait before drawing to the frame
-    frame_semaphore: Option<B::Semaphore>,
-    /// Fence to wait for draw calls to finish
-    frame_fence: Option<B::Fence>,
     /// Raw vertex shader
     // TODO multiple pipelines/shaders
     vertex_shader: &'a [u8],
@@ -63,12 +52,6 @@ impl<'a, B: Backend> Default for RenderBuilder<'a, B> {
             queue_group: None,
             command_pool: None,
             render_pass: None,
-            pipeline: None,
-            swapchain: None,
-            image_views: None,
-            frame_buffers: None,
-            frame_semaphore: None,
-            frame_fence: None,
             // TODO allow for more shaders
             vertex_shader: &[],
             fragment_shader: &[],
