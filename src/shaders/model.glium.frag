@@ -2,13 +2,12 @@
 * Basic fragment shader using Blinn-Phong
 * shading. TODO textures
 */
-#version 450
-#extension GL_ARB_separate_shader_objects : enable
+#version 320
 
-layout (location = 0) out vec4 target;
+out vec4 target;
 
-layout (location = 0) in vec3 v_position;
-layout (location = 1) in vec3 v_normal;
+in vec3 v_position;
+in vec3 v_normal;
 
 const vec3 light_dir = vec3(0.0, 0.0, 1.0);
 const vec3 ambient_color = vec3(0.0, 0.0, 0.3);

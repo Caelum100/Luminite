@@ -6,14 +6,13 @@
 * Because glium lacks support for proper uniforms,
 * we need a separate shader to use glium.
 */
-#version 450
-#extension GL_ARB_separate_shader_objects : enable
+#version 320
 
-layout (location = 0) in vec3 a_position;
-layout (location = 1) in vec3 a_normal;
+in vec3 a_position;
+in vec3 a_normal;
 
-layout (location = 0) out vec3 v_position;
-layout (location = 1) out vec3 v_normal;
+out vec3 v_position;
+out vec3 v_normal;
 
 uniform mat4 matrix;
 uniform mat4 modelview; // TODO - this is redundant
