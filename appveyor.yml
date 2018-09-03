@@ -28,6 +28,7 @@ install:
 test_script:
 # we don't run the "test phase" when doing deploys
 - cargo build --target %TARGET% --release --features=%FEATURES%
+- cargo test --target %TARGET% --release --features=%FEATURES%
 
 
 before_deploy:
