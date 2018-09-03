@@ -20,6 +20,7 @@ extern crate glium;
 extern crate gfx_hal;
 
 pub use glm::*;
+use std::time::SystemTime;
 use world::{Location, Object, World};
 // Trait
 use render::RenderBackend;
@@ -30,10 +31,13 @@ pub mod maze;
 pub mod render;
 pub mod world;
 
+const MS_PER_UPDATE: f64 = 1000.0 / 60.0;
+
 pub struct Game<B: RenderBackend> {
     pub render: B::RenderContext,
     pub world: World<B>,
     pub running: bool,
+    pub start_time: SystemTime,
 }
 
 fn main() {
@@ -42,6 +46,7 @@ fn main() {
         render: render::create_context::<_RenderBackend>("Luminite", (720, 480)),
         world: World::new(),
         running: true,
+        start_time: SystemTime::now(),
     };
 
     let cube = Object::new(
@@ -64,9 +69,22 @@ fn main() {
 }
 
 fn main_loop(game: &mut Game<_RenderBackend>) {
+    let mut previous = get_time(&game.start_time);
+    let mut lag = 0.0;
     while game.running {
+        let current = get_time(&game.start_time);
+        let elapsed = current - previous;
+        previous = current;
+        lag += elapsed;
+
         poll_events(game);
-        game.world.tick();
+
+        while lag >= MS_PER_UPDATE {
+            game.world.tick();
+            lag -= MS_PER_UPDATE;
+        }
+
+        // TODO extrapolation for smoothness
         render::render(&mut game.render, &mut game.world);
     }
 }
@@ -99,4 +117,13 @@ fn poll_events(game: &mut Game<_RenderBackend>) {
         _ => (),
     });
     game.running = running;
+}
+
+/// Returns the current time in milleseconds,
+/// relative to the specified starting time.
+fn get_time(start_time: &SystemTime) -> f64 {
+    let time_elapsed = start_time.elapsed().unwrap();
+    let secs = time_elapsed.as_secs();
+    let nanos = time_elapsed.subsec_nanos();
+    ((secs * 1000) as f64) + ((nanos as f64) / 1_000_000.0)
 }
