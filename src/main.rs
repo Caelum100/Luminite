@@ -26,9 +26,9 @@ use render::RenderBackend;
 // Type
 use render::_RenderBackend;
 
+pub mod maze;
 pub mod render;
 pub mod world;
-pub mod maze;
 
 pub struct Game<B: RenderBackend> {
     pub render: B::RenderContext,

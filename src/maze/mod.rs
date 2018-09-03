@@ -115,12 +115,7 @@ mod tests {
         let maze = Maze {
             height: 8,
             width: 8,
-            walls: vec![
-                0b10101010,
-                0b10101010,
-                0b10101010,
-                0b10101010,
-            ]
+            walls: vec![0b10101010, 0b10101010, 0b10101010, 0b10101010],
         };
 
         assert!(maze.has_wall_at(0, 0));
@@ -158,7 +153,6 @@ mod tests {
         let mut maze = maze();
         maze.set_wall_at(9039, 983, true);
     }
-
 
     fn maze() -> Maze {
         Maze {
