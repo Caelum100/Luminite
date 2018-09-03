@@ -6,8 +6,7 @@
 * Because glium lacks support for proper uniforms,
 * we need a separate shader to use glium.
 */
-#version 320
-
+#version 330
 in vec3 a_position;
 in vec3 a_normal;
 

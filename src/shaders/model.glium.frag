@@ -2,7 +2,7 @@
 * Basic fragment shader using Blinn-Phong
 * shading. TODO textures
 */
-#version 320
+#version 330
 
 out vec4 target;
 
