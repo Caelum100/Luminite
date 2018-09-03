@@ -12,9 +12,6 @@ environment:
     FEATURES: dx12
     TARGET_NAME: windows-dx12
   - TARGET: x86_64-pc-windows-msvc
-    FEATURES: vulkan
-    TARGET_NAME: windows-vulkan
-  - TARGET: x86_64-pc-windows-msvc
     FEATURES: gl
     TARGET_NAME: windows-gl
 
