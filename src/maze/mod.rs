@@ -1,5 +1,7 @@
 //! Module for the creation and manipulation of mazes.
 
+pub mod gen;
+
 /// A maze is represented
 /// as a vector of bytes. Each wall is stored
 /// as a single bit in a byte: a place with a wall
@@ -79,8 +81,6 @@ impl Maze {
         } else {
             self.walls[byte_index] &= !(1 << (7 - byte_offset));
         }
-
-        println!("{:?}", self.walls);
 
         old_value
     }

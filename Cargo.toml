@@ -45,3 +45,6 @@ optional = true
 
 [build-dependencies]
 glsl-to-spirv = "0.1.6"
+
+[dev-dependencies]
+fastcmp = "1.0.1"
