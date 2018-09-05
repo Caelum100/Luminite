@@ -87,10 +87,6 @@ fn init_maze(ctx: &mut MazeGen) {
     }
 }
 
-fn wall_prop_key(x: u32, y: u32) -> u64 {
-    (x as u64) | ((y as u64) << 32)
-}
-
 /// Goes through the entire maze,
 /// randomizing paths and generating
 /// a maze. There is not guarantee that
@@ -100,6 +96,42 @@ fn wall_prop_key(x: u32, y: u32) -> u64 {
 /// and repair them.
 fn trace(ctx: &mut MazeGen) {
     let pos: (u32, u32) = (0, 0);
+}
+
+/// Returns the sides of this cell
+/// that are not walls.
+fn get_open_faces(ctx: &MazeGen, cell_x: u32, cell_y: u32) -> Faces {
+    let maze = &ctx.maze;
+
+    let left = !maze.has_wall_at(cell_x, cell_y, WallDir::VERTICAL);
+    let right = !maze.has_wall_at(cell_x + 1, cell_y, WallDir::VERTICAL);
+    let top = !maze.has_wall_at(cell_x, cell_y, WallDir::HORIZONTAL);
+    let bottom = !maze.has_wall_at(cell_x, cell_y + 1, WallDir::HORIZONTAL);
+
+    Faces::new(left, right, top, bottom)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct Faces {
+    left: bool,
+    right: bool,
+    top: bool,
+    bottom: bool,
+}
+
+impl Faces {
+    pub fn new(left: bool, right: bool, top: bool, bottom: bool) -> Self {
+        Faces {
+            left,
+            right,
+            bottom,
+            top,
+        }
+    }
+}
+
+fn wall_prop_key(x: u32, y: u32) -> u64 {
+    (x as u64) | ((y as u64) << 32)
 }
 
 #[cfg(test)]
@@ -131,5 +163,35 @@ mod tests {
 
         assert_eq!(ctx.maze.vertical_walls[0], 0b10000001);
         assert_eq!(ctx.maze.vertical_walls[3], 0b10000001);
+    }
+
+    #[test]
+    fn _get_open_faces() {
+        let mut ctx = MazeGen {
+            maze: Maze {
+                height: 8,
+                width: 8,
+                horizontal_walls: vec![0; 8 * 8],
+                vertical_walls: vec![0; 8 * 8],
+            },
+            wall_props: HashMap::new(),
+        };
+
+        println!("{:?}", get_open_faces(&ctx, 0, 0));
+
+        assert_eq!(
+            get_open_faces(&ctx, 0, 0),
+            Faces::new(true, true, true, true),
+        );
+        ctx.maze.set_wall_at(0, 0, WallDir::VERTICAL, true);
+        assert_eq!(
+            get_open_faces(&ctx, 0, 0),
+            Faces::new(false, true, true, true),
+        );
+        ctx.maze.set_wall_at(0, 1, WallDir::HORIZONTAL, true);
+        assert_eq!(
+            get_open_faces(&ctx, 0, 0),
+            Faces::new(false, true, true, false),
+        );
     }
 }
