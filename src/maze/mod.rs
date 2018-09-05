@@ -1,5 +1,8 @@
 //! Module for the creation and manipulation of mazes.
 
+use std::fmt::Formatter;
+use std::fmt::Error;
+
 pub mod gen;
 
 /// A maze is represented

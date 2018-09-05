@@ -1,5 +1,7 @@
 //! This module implements the pseudo-random generation
 //! of mazes.
+use self::rand::distributions::{Distribution, Standard};
+use self::rand::Rng;
 use super::*;
 use rand;
 use std::collections::HashMap;
@@ -32,7 +34,7 @@ struct WallProperty {
 /// width and height. Both `width` and `height`
 /// must be multiples of 8.
 /// This may take a long time.
-pub fn gen_maze(width: u32, height: u32) {
+pub fn gen_maze(width: u32, height: u32) -> Maze {
     assert!(width % 8 == 0 && height % 8 == 0);
     let mut ctx = MazeGen {
         maze: Maze {
@@ -49,6 +51,8 @@ pub fn gen_maze(width: u32, height: u32) {
 
     // Run the tracing iteration
     trace(&mut ctx);
+
+    ctx.maze
 }
 
 /// Sets border walls to `true` on this maze
@@ -95,7 +99,49 @@ fn init_maze(ctx: &mut MazeGen) {
 /// must be taken to detect these closed-off sections
 /// and repair them.
 fn trace(ctx: &mut MazeGen) {
-    let pos: (u32, u32) = (0, 0);
+    use self::rand::random;
+    use self::Direction::*;
+
+    let mut pos = Pos::new(0, 0);
+    let height = ctx.maze.height;
+    let width = ctx.maze.width;
+    let total_cycles = width * height * 4;
+    let mut direction = RIGHT;
+    let mut cycles_run = 0;
+    let mut faces = Faces::new(false, false, false, false);
+
+    while cycles_run < total_cycles {
+        {
+            let maze = &mut ctx.maze;
+            faces = {
+                let mut left = false;
+                let mut right = false;
+                let mut top = false;
+                let mut bottom = false;
+
+                match direction {
+                    RIGHT | LEFT => {
+                        top = true;
+                        bottom = true;
+                    }
+                    DOWN | UP => {
+                        left = true;
+                        right = true;
+                    }
+                }
+
+                Faces::new(left, right, top, bottom)
+            };
+        }
+
+        set_walls_at_face(ctx, pos.x, pos.y, faces);
+
+        if random::<u8>() < 16 {
+            direction = random();
+        }
+
+        cycles_run += 1;
+    }
 }
 
 /// Returns the sides of this cell
@@ -109,6 +155,30 @@ fn get_open_faces(ctx: &MazeGen, cell_x: u32, cell_y: u32) -> Faces {
     let bottom = !maze.has_wall_at(cell_x, cell_y + 1, WallDir::HORIZONTAL);
 
     Faces::new(left, right, top, bottom)
+}
+
+/// Sets the walls of a maze around the specified
+/// cell to the specified values. This will not
+/// modify walls marked as unbreakable.
+fn set_walls_at_face(ctx: &mut MazeGen, cell_x: u32, cell_y: u32, faces: Faces) {
+    let wall_props = &ctx.wall_props;
+    let maze = &mut ctx.maze;
+    let key = PropKey::new(wall_prop_key(cell_x, cell_y), WallDir::VERTICAL);
+    if wall_props.get(&key).is_none() || !wall_props.get(&key).unwrap().unbreakable {
+        maze.set_wall_at(cell_x, cell_y, WallDir::VERTICAL, faces.left);
+    }
+    let key = PropKey::new(wall_prop_key(cell_x + 1, cell_y), WallDir::VERTICAL);
+    if wall_props.get(&key).is_none() || !wall_props.get(&key).unwrap().unbreakable {
+        maze.set_wall_at(cell_x + 1, cell_y, WallDir::VERTICAL, faces.right);
+    }
+    let key = PropKey::new(wall_prop_key(cell_x, cell_y), WallDir::HORIZONTAL);
+    if wall_props.get(&key).is_none() || !wall_props.get(&key).unwrap().unbreakable {
+        maze.set_wall_at(cell_x, cell_y, WallDir::HORIZONTAL, faces.top);
+    }
+    let key = PropKey::new(wall_prop_key(cell_x, cell_y + 1), WallDir::HORIZONTAL);
+    if wall_props.get(&key).is_none() || !wall_props.get(&key).unwrap().unbreakable {
+        maze.set_wall_at(cell_x, cell_y + 1, WallDir::HORIZONTAL, faces.bottom);
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -126,6 +196,38 @@ impl Faces {
             right,
             bottom,
             top,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct Pos {
+    x: u32,
+    y: u32,
+}
+
+impl Pos {
+    fn new(x: u32, y: u32) -> Self {
+        Pos { x, y }
+    }
+}
+
+/// A direction
+enum Direction {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+}
+
+impl Distribution<Direction> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Direction {
+        match rng.gen_range(0, 4) {
+            0 => Direction::UP,
+            1 => Direction::DOWN,
+            2 => Direction::LEFT,
+            3 => Direction::RIGHT,
+            _ => panic!(),
         }
     }
 }
@@ -193,5 +295,27 @@ mod tests {
             get_open_faces(&ctx, 0, 0),
             Faces::new(false, true, true, false),
         );
+    }
+
+    #[test]
+    fn _set_walls_at_face() {
+        let maze = Maze {
+            width: 8,
+            height: 8,
+            vertical_walls: vec![0; 8 * 8],
+            horizontal_walls: vec![0; 8 * 8],
+        };
+        let mut ctx = MazeGen {
+            maze,
+            wall_props: HashMap::new(),
+        };
+        ctx.wall_props.insert(
+            PropKey::new(wall_prop_key(0, 0), WallDir::VERTICAL),
+            WallProperty { unbreakable: true },
+        );
+
+        set_walls_at_face(&mut ctx, 0, 0, Faces::new(true, true, false, false));
+        assert!(!ctx.maze.has_wall_at(0, 0, WallDir::VERTICAL));
+        assert!(ctx.maze.has_wall_at(1, 0, WallDir::VERTICAL));
     }
 }

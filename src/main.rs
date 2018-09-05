@@ -49,6 +49,8 @@ fn main() {
         start_time: SystemTime::now(),
     };
 
+    println!("{}", maze::gen::gen_maze(16, 16));
+
     let cube = Object::new(
         &mut game.world,
         render::create_obj_render(0, 0, &mut game.render),
