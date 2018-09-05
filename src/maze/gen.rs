@@ -120,7 +120,7 @@ struct Faces {
 }
 
 impl Faces {
-    pub fn new(left: bool, right: bool, top: bool, bottom: bool) -> Self {
+    fn new(left: bool, right: bool, top: bool, bottom: bool) -> Self {
         Faces {
             left,
             right,
