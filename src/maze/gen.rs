@@ -26,7 +26,8 @@ pub fn gen_maze(width: u32, height: u32) {
         maze: Maze {
             width,
             height,
-            walls: vec![0; (width * height) as usize],
+            vertical_walls: vec![0; (width * height) as usize],
+            horizontal_walls: vec![0; (width * height) as usize],
         },
         wall_props: HashMap::new(),
     };
@@ -43,6 +44,7 @@ fn init_maze(ctx: &mut MazeGen) {
     let mut pos: (u32, u32) = (0, 0);
     let width = ctx.maze.width;
     let height = ctx.maze.height;
+    assert!(width % 2 == 0 && height % 2 == 0);
     let maze = &mut ctx.maze;
     let mut current_dir = 0; // 0 = right, 1 = down, 2 = left, 3 = up
 
@@ -64,7 +66,7 @@ fn init_maze(ctx: &mut MazeGen) {
             }
             1 => {
                 if pos.1 < height - 1 {
-                    pos.1 += 1;
+                    pos.1 += 2;
                 } else {
                     current_dir = 2;
                     continue;
@@ -80,12 +82,12 @@ fn init_maze(ctx: &mut MazeGen) {
             }
             3 => {
                 if pos.1 > 0 {
-                    pos.1 -= 1;
+                    pos.1 -= 2;
                 } else {
                     break;
                 }
             }
-            _ => panic!(),
+            _ => panic!("Unexpected direction value: this shouldn't happen"),
         }
 
         // Check if finished
@@ -127,7 +129,8 @@ mod tests {
             maze: Maze {
                 height: 8,
                 width: 8,
-                walls: vec![0; 8 * 8],
+                vertical_walls: vec![0; 8 * 8],
+                horizontal_walls: vec![0; 8 * 8],
             },
             wall_props: HashMap::new(),
         };
@@ -139,10 +142,30 @@ mod tests {
         }
 
         assert!(
-            ctx.maze.walls.feq(
+            ctx.maze.vertical_walls.feq(
                 & [
-                    0b11111111, 0b10000001, 0b10000001, 0b10000001, 0b10000001, 0b10000001,
-                    0b10000001, 0b11111111,
+                    0b10000001,
+                    0b10000001,
+                    0b10000001,
+                    0b10000001,
+                    0b10000001,
+                    0b10000001,
+                    0b10000001,
+                    0b10000001,
+                ]
+            )
+        );
+        assert!(
+            ctx.maze.horizontal_walls.feq(
+                & [
+                    0b11111111,
+                    0b00000000,
+                    0b00000000,
+                    0b00000000,
+                    0b00000000,
+                    0b00000000,
+                    0b00000000,
+                    0b11111111,
                 ]
             )
         );

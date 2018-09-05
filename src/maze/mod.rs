@@ -30,7 +30,8 @@ pub mod gen;
 pub struct Maze {
     height: u32,
     width: u32,
-    walls: Vec<u8>,
+    horizontal_walls: Vec<u8>,
+    vertical_walls: Vec<u8>,
 }
 
 impl Maze {
@@ -55,40 +56,54 @@ impl Maze {
     /// Returns whether or not there is a wall
     /// at the specified position. The coordinates
     /// are as described in the struct documentation.
-    pub fn has_wall_at(&self, column: u32, row: u32) -> bool {
+    pub fn has_wall_at(&self, column: u32, row: u32, dir: WallDir) -> bool {
         assert!(column < self.width && row < self.height);
         let byte_index = self.byte_index(column, row);
         let byte_offset = self.byte_offset(column);
 
-        let byte = self.walls[byte_index];
+        let byte = match dir {
+            WallDir::VERTICAL => self.vertical_walls[byte_index],
+            WallDir::HORIZONTAL => self.horizontal_walls[byte_index],
+        };
         (byte >> (7 - byte_offset)) & 0b0000001 == 1
     }
 
     /// Sets whether a wall exists at the specified position, returning
     /// the old value.
     /// The coordinates are as described in the struct documentation.
-    pub fn set_wall_at(&mut self, column: u32, row: u32, value: bool) -> bool {
+    pub fn set_wall_at(&mut self, column: u32, row: u32, dir: WallDir, value: bool) -> bool {
         assert!(column < self.width && row < self.height);
-        let old_value = self.has_wall_at(column, row);
+        let old_value = self.has_wall_at(column, row, dir);
 
         let byte_index = self.byte_index(column, row);
         let byte_offset = self.byte_offset(column);
 
         println!("{}, {}", byte_index, byte_offset);
 
+        let mut wall_vec = match dir {
+            WallDir::VERTICAL => &mut self.vertical_walls,
+            WallDir::HORIZONTAL => &mut self.horizontal_walls,
+        };
+
         if value {
-            self.walls[byte_index] |= (value as u8) << (7 - byte_offset);
+            wall_vec[byte_index] |= (value as u8) << (7 - byte_offset);
         } else {
-            self.walls[byte_index] &= !(1 << (7 - byte_offset));
+            wall_vec[byte_index] &= !(1 << (7 - byte_offset));
         }
 
         old_value
     }
 }
 
+pub enum WallDir {
+    VERTICAL,
+    HORIZONTAL,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::WallDir::*;
     #[test]
     fn byte_index() {
         let maze = maze();
@@ -115,50 +130,52 @@ mod tests {
         let maze = Maze {
             height: 8,
             width: 8,
-            walls: vec![0b10101010, 0b10101010, 0b10101010, 0b10101010],
+            horizontal_walls: vec![0b10101010, 0b10101010, 0b10101010, 0b10101010],
+            vertical_walls: vec![0b10101010, 0b10101010, 0b10101010, 0b10101010],
         };
 
-        assert!(maze.has_wall_at(0, 0));
-        assert!(!maze.has_wall_at(1, 0));
-        assert!(maze.has_wall_at(0, 1));
-        assert!(!maze.has_wall_at(1, 1));
+        assert!(maze.has_wall_at(0, 0, VERTICAL));
+        assert!(!maze.has_wall_at(1, 0, HORIZONTAL));
+        assert!(maze.has_wall_at(0, 1, VERTICAL));
+        assert!(!maze.has_wall_at(1, 1, VERTICAL));
 
-        assert!(!maze.has_wall_at(3, 3));
-        assert!(maze.has_wall_at(2, 3));
+        assert!(!maze.has_wall_at(3, 3, VERTICAL));
+        assert!(maze.has_wall_at(2, 3, VERTICAL));
     }
 
     #[test]
     #[should_panic]
     fn has_wall_at_out_of_bounds() {
         let maze = maze();
-        maze.has_wall_at(64, 67);
+        maze.has_wall_at(64, 67, VERTICAL);
     }
 
     #[test]
     fn set_wall_at() {
         let mut maze = maze();
-        assert!(!maze.set_wall_at(0, 0, true));
-        assert!(maze.has_wall_at(0, 0));
-        assert!(maze.set_wall_at(0, 0, false));
-        assert!(!maze.has_wall_at(0, 0));
-        assert!(!maze.set_wall_at(63, 29, true));
-        assert!(maze.has_wall_at(63, 29));
-        assert!(maze.set_wall_at(63, 29, false));
-        assert!(!maze.has_wall_at(63, 29));
+        assert!(!maze.set_wall_at(0, 0, VERTICAL, true));
+        assert!(maze.has_wall_at(0, 0, VERTICAL));
+        assert!(maze.set_wall_at(0, 0, VERTICAL, false));
+        assert!(!maze.has_wall_at(0, 0, VERTICAL));
+        assert!(!maze.set_wall_at(63, 29, VERTICAL, true));
+        assert!(maze.has_wall_at(63, 29, VERTICAL));
+        assert!(maze.set_wall_at(63, 29, VERTICAL, false));
+        assert!(!maze.has_wall_at(63, 29, VERTICAL));
     }
 
     #[test]
     #[should_panic]
     fn set_wall_at_out_of_bounds() {
         let mut maze = maze();
-        maze.set_wall_at(9039, 983, true);
+        maze.set_wall_at(9039, 983, VERTICAL, true);
     }
 
     fn maze() -> Maze {
         Maze {
             height: 64,
             width: 64,
-            walls: vec![0; 64 * 64],
+            horizontal_walls: vec![0; 64 * 64],
+            vertical_walls: vec![0; 64 * 64],
         }
     }
 }
