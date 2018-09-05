@@ -78,9 +78,7 @@ impl Maze {
         let byte_index = self.byte_index(column, row);
         let byte_offset = self.byte_offset(column);
 
-        println!("{}, {}", byte_index, byte_offset);
-
-        let mut wall_vec = match dir {
+        let wall_vec = match dir {
             WallDir::VERTICAL => &mut self.vertical_walls,
             WallDir::HORIZONTAL => &mut self.horizontal_walls,
         };
@@ -95,6 +93,7 @@ impl Maze {
     }
 }
 
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum WallDir {
     VERTICAL,
     HORIZONTAL,
@@ -102,8 +101,8 @@ pub enum WallDir {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::WallDir::*;
+    use super::*;
     #[test]
     fn byte_index() {
         let maze = maze();

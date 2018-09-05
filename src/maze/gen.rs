@@ -6,10 +6,22 @@ use std::collections::HashMap;
 
 struct MazeGen {
     maze: Maze,
-    /// A map mapping keys (x | (y << 32)) to values
+    /// A map mapping keys (x | (y << 32), wall_dir) to values
     /// which define certain properties of each
     /// wall, e.g. unbreakable walls like the edge of the maze.
-    wall_props: HashMap<u64, WallProperty>,
+    wall_props: HashMap<PropKey, WallProperty>,
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
+struct PropKey {
+    coord: u64,
+    dir: WallDir,
+}
+
+impl PropKey {
+    pub fn new(coord: u64, dir: WallDir) -> Self {
+        PropKey { coord, dir }
+    }
 }
 
 struct WallProperty {
@@ -41,59 +53,37 @@ pub fn gen_maze(width: u32, height: u32) {
 
 /// Sets border walls to `true` on this maze
 fn init_maze(ctx: &mut MazeGen) {
-    let mut pos: (u32, u32) = (0, 0);
     let width = ctx.maze.width;
     let height = ctx.maze.height;
     assert!(width % 2 == 0 && height % 2 == 0);
     let maze = &mut ctx.maze;
-    let mut current_dir = 0; // 0 = right, 1 = down, 2 = left, 3 = up
 
-    loop {
-        maze.set_wall_at(pos.0, pos.1, true);
+    // Set horizontal walls at bottom and top
+    for x in 0..width {
+        maze.set_wall_at(x, 0, WallDir::HORIZONTAL, true);
+        maze.set_wall_at(x, height - 1, WallDir::HORIZONTAL, true);
         ctx.wall_props.insert(
-            wall_prop_key(pos.0, pos.1),
+            PropKey::new(wall_prop_key(x, 0), WallDir::HORIZONTAL),
             WallProperty { unbreakable: true },
         );
+        ctx.wall_props.insert(
+            PropKey::new(wall_prop_key(x, height - 1), WallDir::HORIZONTAL),
+            WallProperty { unbreakable: true },
+        );
+    }
 
-        match current_dir {
-            0 => {
-                if pos.0 < width - 1 {
-                    pos.0 += 1;
-                } else {
-                    current_dir = 1;
-                    continue;
-                }
-            }
-            1 => {
-                if pos.1 < height - 1 {
-                    pos.1 += 2;
-                } else {
-                    current_dir = 2;
-                    continue;
-                }
-            }
-            2 => {
-                if pos.0 > 0 {
-                    pos.0 -= 1;
-                } else {
-                    current_dir = 3;
-                    continue;
-                }
-            }
-            3 => {
-                if pos.1 > 0 {
-                    pos.1 -= 2;
-                } else {
-                    break;
-                }
-            }
-            _ => panic!("Unexpected direction value: this shouldn't happen"),
-        }
-
-        // Check if finished
-        if pos == (0, 0) {
-            break;
-        }
+    // Set vertical walls on the sides
+    for y in 0..height {
+        maze.set_wall_at(0, y, WallDir::VERTICAL, true);
+        maze.set_wall_at(width - 1, y, WallDir::VERTICAL, true);
+        ctx.wall_props.insert(
+            PropKey::new(wall_prop_key(0, y), WallDir::VERTICAL),
+            WallProperty { unbreakable: true },
+        );
+        ctx.wall_props.insert(
+            PropKey::new(wall_prop_key(width - 1, y), WallDir::VERTICAL),
+            WallProperty { unbreakable: true },
+        );
     }
 }
 
@@ -114,9 +104,7 @@ fn trace(ctx: &mut MazeGen) {
 
 #[cfg(test)]
 mod tests {
-    extern crate fastcmp;
     use super::*;
-    use self::fastcmp::Compare;
     #[test]
     #[should_panic]
     fn _gen_maze_not_multiple_of_8() {
@@ -137,38 +125,11 @@ mod tests {
 
         init_maze(&mut ctx);
 
-        for byte in ctx.maze.walls.iter() {
-            println!("{:b}", byte);
-        }
+        assert_eq!(ctx.maze.horizontal_walls[0], 0b11111111);
+        assert_eq!(ctx.maze.horizontal_walls[1], 0b00000000);
+        assert_eq!(ctx.maze.horizontal_walls[7], 0b11111111);
 
-        assert!(
-            ctx.maze.vertical_walls.feq(
-                & [
-                    0b10000001,
-                    0b10000001,
-                    0b10000001,
-                    0b10000001,
-                    0b10000001,
-                    0b10000001,
-                    0b10000001,
-                    0b10000001,
-                ]
-            )
-        );
-        assert!(
-            ctx.maze.horizontal_walls.feq(
-                & [
-                    0b11111111,
-                    0b00000000,
-                    0b00000000,
-                    0b00000000,
-                    0b00000000,
-                    0b00000000,
-                    0b00000000,
-                    0b11111111,
-                ]
-            )
-        );
-
+        assert_eq!(ctx.maze.vertical_walls[0], 0b10000001);
+        assert_eq!(ctx.maze.vertical_walls[3], 0b10000001);
     }
 }
