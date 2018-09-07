@@ -5,6 +5,7 @@ use self::rand::Rng;
 use super::*;
 use rand;
 use std::collections::HashMap;
+use std::ops::Add;
 
 struct MazeGen {
     maze: Maze,
@@ -108,11 +109,10 @@ fn trace(ctx: &mut MazeGen) {
     let total_cycles = width * height * 4;
     let mut direction = RIGHT;
     let mut cycles_run = 0;
-    let mut faces = Faces::new(false, false, false, false);
+    let mut faces;
 
     while cycles_run < total_cycles {
         {
-            let maze = &mut ctx.maze;
             faces = {
                 let mut left = false;
                 let mut right = false;
@@ -133,15 +133,43 @@ fn trace(ctx: &mut MazeGen) {
                 Faces::new(left, right, top, bottom)
             };
         }
+        println!("({}, {})", pos.x, pos.y);
 
-        set_walls_at_face(ctx, pos.x, pos.y, faces);
+        set_walls_at_face(ctx, pos.x as u32, pos.y as u32, faces);
 
-        if random::<u8>() < 16 {
+        if random::<u8>() < 64 {
             direction = random();
         }
 
+        // Make sure we don't go out of bounds
+        let mut new_pos = pos + move_in_direction(direction);
+        println!("{:?}", new_pos);
+        while new_pos.x >= (width as i32) || new_pos.x < 0
+            || new_pos.y >= (height as i32) || new_pos.y < 0 {
+            direction = random();
+            new_pos = pos + move_in_direction(direction);
+            println!("HEIGHT {}, {}", height, width);
+        }
+
+        pos = new_pos;
+
         cycles_run += 1;
     }
+}
+
+// Moves in the specified direction, returning
+// the change in position for both `x` and `y`.
+fn move_in_direction(direction: Direction) -> Pos {
+    let mut x = 0;
+    let mut y = 0;
+    match direction {
+        Direction::UP => y -= 1,
+        Direction::DOWN => y += 1,
+        Direction::LEFT => x -= 1,
+        Direction::RIGHT => x += 1,
+    };
+
+    Pos::new(x, y)
 }
 
 /// Returns the sides of this cell
@@ -202,17 +230,29 @@ impl Faces {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct Pos {
-    x: u32,
-    y: u32,
+    x: i32,
+    y: i32,
+}
+
+impl Add<Pos> for Pos {
+    type Output = Pos;
+
+    fn add(self, rhs: Pos) -> <Self as Add<Pos>>::Output {
+        Pos {
+            x: rhs.x + self.x,
+            y: rhs.y + self.y,
+        }
+    }
 }
 
 impl Pos {
-    fn new(x: u32, y: u32) -> Self {
+    fn new(x: i32, y: i32) -> Self {
         Pos { x, y }
     }
 }
 
 /// A direction
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Direction {
     UP,
     DOWN,
@@ -317,5 +357,25 @@ mod tests {
         set_walls_at_face(&mut ctx, 0, 0, Faces::new(true, true, false, false));
         assert!(!ctx.maze.has_wall_at(0, 0, WallDir::VERTICAL));
         assert!(ctx.maze.has_wall_at(1, 0, WallDir::VERTICAL));
+    }
+
+    #[test]
+    fn _move_in_direction() {
+        assert_eq!(
+            move_in_direction(Direction::UP),
+            Pos::new(0, -1),
+        );
+        assert_eq!(
+            move_in_direction(Direction::DOWN),
+            Pos::new(0, 1),
+        );
+        assert_eq!(
+            move_in_direction(Direction::LEFT),
+            Pos::new(-1, 0),
+        );
+        assert_eq!(
+            move_in_direction(Direction::RIGHT),
+            Pos::new(1, 0),
+        );
     }
 }

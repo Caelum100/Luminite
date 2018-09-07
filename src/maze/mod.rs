@@ -96,6 +96,20 @@ impl Maze {
     }
 }
 
+impl super::std::fmt::Display for Maze {
+    fn fmt<'a>(&self, f: & mut Formatter<'a>) -> Result<(), Error> {
+        for byte in &self.horizontal_walls {
+            writeln!(f, "{:b}", byte)?;
+        }
+        for byte in &self.vertical_walls {
+            writeln!(f, "{:b}", byte)?;
+        }
+        write!(f, "height: {}, width: {}", self.height, self.width)?;
+
+        Ok(())
+    }
+}
+
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum WallDir {
     VERTICAL,
