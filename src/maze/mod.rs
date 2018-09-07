@@ -1,7 +1,10 @@
 //! Module for the creation and manipulation of mazes.
 
-use std::fmt::Formatter;
+use render;
+use render::RenderBackend;
 use std::fmt::Error;
+use std::fmt::Formatter;
+use world::{Location, Object, World};
 
 pub mod gen;
 
@@ -95,10 +98,22 @@ impl Maze {
 
         old_value
     }
+
+    /// Turns the walls of this maze into a vector
+    /// of objects.
+    pub fn get_objects<B: RenderBackend>(
+        &self,
+        world: &mut World<B>,
+        render: &mut B::RenderContext,
+    ) -> Vec<Object<B>> {
+        let mut result = Vec::new();
+
+        unimplemented!()
+    }
 }
 
 impl super::std::fmt::Display for Maze {
-    fn fmt<'a>(&self, f: & mut Formatter<'a>) -> Result<(), Error> {
+    fn fmt<'a>(&self, f: &mut Formatter<'a>) -> Result<(), Error> {
         for byte in &self.horizontal_walls {
             writeln!(f, "{:b}", byte)?;
         }

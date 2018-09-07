@@ -46,6 +46,14 @@ impl RenderBackend for _RenderBackend {
             events_loop,
         }
     }
+
+    fn create_obj_render(
+        model_index: usize,
+        _shader_index: usize, // Not yet used (see #7)
+        _ctx: &RenderContext,
+    ) -> ObjectRender {
+        ObjectRender { model_index }
+    }
 }
 
 /// Holds state data for OpenGL
@@ -95,14 +103,6 @@ fn render_obj(ctx: &RenderContext, frame: &mut glium::Frame, object: &Object<_Re
             &draw_params,
         )
         .unwrap();
-}
-
-pub fn create_obj_render(
-    model_index: usize,
-    _shader_index: usize, // Not yet used (see #7)
-    _ctx: &RenderContext,
-) -> ObjectRender {
-    ObjectRender { model_index }
 }
 
 /// Vertex and index buffers

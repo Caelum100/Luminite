@@ -53,6 +53,14 @@ impl RenderBackend for _RenderBackend {
     fn create_context(title: &str, dimensions: (u32, u32)) -> Self::RenderContext {
         _create_context(title, dimensions)
     }
+
+    fn create_obj_render(
+        model_index: usize,
+        shader_index: usize,
+        render: &mut <Self as RenderBackend>::RenderContext,
+    ) -> Self::ObjectRender {
+        _create_obj_render(model_index, shader_index, render)
+    }
 }
 
 /// Uniform
@@ -260,7 +268,7 @@ fn viewport(extent: &Extent) -> Viewport {
 /// Creates a descriptor set and pool and uniform buffer/memory
 /// for the object. The model_index is the index into the RenderContext's
 /// model vector and the shader_index is not used yet (GitHub issue #7)
-pub fn create_obj_render<B: Backend>(
+pub fn _create_obj_render<B: Backend>(
     model_index: usize,
     shader_index: usize,
     ctx: &mut RenderContext<B>,

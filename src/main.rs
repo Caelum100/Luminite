@@ -48,12 +48,11 @@ fn main() {
         running: true,
         start_time: SystemTime::now(),
     };
-
-    println!("{}", maze::gen::gen_maze(16, 16));
+    let maze = maze::gen::gen_maze(16, 16);
 
     let cube = Object::new(
         &mut game.world,
-        render::create_obj_render(0, 0, &mut game.render),
+        _RenderBackend::create_obj_render(0, 0, &mut game.render),
         Location::new(0.0, 0.0, 0.0),
     );
 
@@ -61,11 +60,15 @@ fn main() {
 
     let sword = Object::new(
         &mut game.world,
-        render::create_obj_render(1, 0, &mut game.render),
+        _RenderBackend::create_obj_render(1, 0, &mut game.render),
         Location::new(0.0, -1.0, 2.0).with_rot(45.0, -90.0),
     );
 
     game.world.add_object(sword);
+
+    /*for object in maze.get_objects(&mut game.world, &mut game.render) {
+        game.world.add_object(object);
+    }*/
 
     main_loop(&mut game);
 }

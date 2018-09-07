@@ -47,7 +47,7 @@ impl<B: RenderBackend> World<B> {
 
     pub fn tick(&mut self) {
         for object in self.objects.values_mut() {
-            object.location.yaw += 1.0;
+            //object.location.yaw += 1.0;
         }
     }
 }
@@ -60,6 +60,13 @@ pub struct Object<B: RenderBackend> {
     pub location: Location,
     /// The render data associated with this object
     pub render: B::ObjectRender,
+}
+
+impl<B: RenderBackend> std::fmt::Debug for Object<B> {
+    fn fmt<'a>(&self, f: &mut std::fmt::Formatter<'a>) -> Result<(), std::fmt::Error> {
+        write!(f, "Object {{location: {:?}}}", self.location)?;
+        Ok(())
+    }
 }
 
 impl<B: RenderBackend> Hash for Object<B> {

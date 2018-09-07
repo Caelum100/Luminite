@@ -144,8 +144,11 @@ fn trace(ctx: &mut MazeGen) {
         // Make sure we don't go out of bounds
         let mut new_pos = pos + move_in_direction(direction);
         println!("{:?}", new_pos);
-        while new_pos.x >= ((width - 1) as i32) || new_pos.x < 0
-            || new_pos.y >= ((height - 1) as i32) || new_pos.y < 0 {
+        while new_pos.x >= ((width - 1) as i32)
+            || new_pos.x < 0
+            || new_pos.y >= ((height - 1) as i32)
+            || new_pos.y < 0
+        {
             direction = random();
             new_pos = pos + move_in_direction(direction);
             println!("HEIGHT {}, {}", height, width);
@@ -361,21 +364,9 @@ mod tests {
 
     #[test]
     fn _move_in_direction() {
-        assert_eq!(
-            move_in_direction(Direction::UP),
-            Pos::new(0, -1),
-        );
-        assert_eq!(
-            move_in_direction(Direction::DOWN),
-            Pos::new(0, 1),
-        );
-        assert_eq!(
-            move_in_direction(Direction::LEFT),
-            Pos::new(-1, 0),
-        );
-        assert_eq!(
-            move_in_direction(Direction::RIGHT),
-            Pos::new(1, 0),
-        );
+        assert_eq!(move_in_direction(Direction::UP), Pos::new(0, -1),);
+        assert_eq!(move_in_direction(Direction::DOWN), Pos::new(0, 1),);
+        assert_eq!(move_in_direction(Direction::LEFT), Pos::new(-1, 0),);
+        assert_eq!(move_in_direction(Direction::RIGHT), Pos::new(1, 0),);
     }
 }

@@ -20,6 +20,11 @@ pub trait RenderBackend {
 
     fn upload_model(ctx: &mut Self::RenderContext, models: Vec<tobj::Model>);
     fn create_context(title: &str, dimensions: (u32, u32)) -> Self::RenderContext;
+    fn create_obj_render(
+        model_index: usize,
+        shader_index: usize,
+        render: &mut Self::RenderContext,
+    ) -> Self::ObjectRender;
 }
 
 /// A three-dimensional vertex
@@ -63,7 +68,7 @@ fn mvp_matrix<B: RenderBackend>(object: &Object<B>) -> (Mat4, Mat4) {
 
     // TODO moving camera
     let view = look_at(
-        vec3(4.0, 3.0, 3.0),
+        vec3(128.0, 100.0, 128.0),
         vec3(0.0, 0.0, 0.0),
         vec3(0.0, 1.0, 0.0),
     );
@@ -78,7 +83,8 @@ fn mvp_matrix<B: RenderBackend>(object: &Object<B>) -> (Mat4, Mat4) {
 /// list of models
 pub fn upload_models<B: RenderBackend>(ctx: &mut B::RenderContext) {
     load_and_upload_model::<B>(ctx, Path::new("assets/models/cube.obj"));
-    load_and_upload_model::<B>(ctx, Path::new("assets/models/sword.obj"))
+    load_and_upload_model::<B>(ctx, Path::new("assets/models/sword.obj"));
+    load_and_upload_model::<B>(ctx, Path::new("assets/models/wall.obj"));
 }
 
 fn load_and_upload_model<B: RenderBackend>(ctx: &mut B::RenderContext, path: &Path) {
