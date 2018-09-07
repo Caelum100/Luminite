@@ -30,6 +30,7 @@ pub mod gen;
 /// respectively.
 ///
 /// Mazes should be generated using the `gen` module.
+#[derive(Debug)]
 pub struct Maze {
     height: u32,
     width: u32,

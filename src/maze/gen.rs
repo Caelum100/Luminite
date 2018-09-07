@@ -41,8 +41,8 @@ pub fn gen_maze(width: u32, height: u32) -> Maze {
         maze: Maze {
             width,
             height,
-            vertical_walls: vec![0; (width * height) as usize],
-            horizontal_walls: vec![0; (width * height) as usize],
+            vertical_walls: vec![0; (width * height / 8) as usize],
+            horizontal_walls: vec![0; (width * height / 8) as usize],
         },
         wall_props: HashMap::new(),
     };
@@ -144,8 +144,8 @@ fn trace(ctx: &mut MazeGen) {
         // Make sure we don't go out of bounds
         let mut new_pos = pos + move_in_direction(direction);
         println!("{:?}", new_pos);
-        while new_pos.x >= (width as i32) || new_pos.x < 0
-            || new_pos.y >= (height as i32) || new_pos.y < 0 {
+        while new_pos.x >= ((width - 1) as i32) || new_pos.x < 0
+            || new_pos.y >= ((height - 1) as i32) || new_pos.y < 0 {
             direction = random();
             new_pos = pos + move_in_direction(direction);
             println!("HEIGHT {}, {}", height, width);
