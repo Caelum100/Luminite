@@ -68,13 +68,13 @@ fn mvp_matrix<B: RenderBackend>(object: &Object<B>) -> (Mat4, Mat4) {
 
     // TODO moving camera
     let view = look_at(
-        vec3(128.0, 100.0, 128.0),
-        vec3(0.0, 0.0, 0.0),
+        vec3(128.0, 64.0, 0.0),
+        vec3(128.0, 0.0, 128.0),
         vec3(0.0, 1.0, 0.0),
     );
 
     // TODO view distance, custom aspect ratio
-    let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 128.0);
+    let projection = perspective(45.0f32, 4.0 / 3.0, 0.1, 256.0);
     (projection * view * model, view * model)
 }
 
