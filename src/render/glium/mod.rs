@@ -50,7 +50,7 @@ impl RenderBackend for _RenderBackend {
     fn create_obj_render(
         model_index: usize,
         _shader_index: usize, // Not yet used (see #7)
-        _ctx: &RenderContext,
+        _ctx: &mut RenderContext,
     ) -> ObjectRender {
         ObjectRender { model_index }
     }
