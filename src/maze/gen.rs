@@ -25,7 +25,7 @@ enum NodeValue {
     WALL,
 }
 
-pub fn gen_maze(height: u32, width: u32) -> Maze {
+pub fn gen_maze(height: u32, width: u32) -> Vec<Object<render::_RenderBackend>> {
     unsafe {
         let mut nodes: Vec<Node> = Vec::new();
 
@@ -34,7 +34,7 @@ pub fn gen_maze(height: u32, width: u32) -> Maze {
                 let node: Node = std::mem::zeroed();
                 if i * j % 2 == 1 {
                     node.x = i;
-                    node.y = i;
+                    node.y = j;
                     node.dirs = 0b00001111;
                     node.value = NodeValue::EMPTY;
                 } else {
@@ -43,7 +43,20 @@ pub fn gen_maze(height: u32, width: u32) -> Maze {
                 nodes.push(node);
             }
         }
+        let start: *mut Node = &mut nodes[(1 + width) as usize];
+        (*start).parent = start;
+        let mut last = start;
+
+        while (last = link(last, height, width, &mut nodes)) != (start as usize) {}
+
+        for i in 0..height {
+            for j in 0..width {
+                let value = nodes[j + width].value;
+                println!("{:?}", value);
+            }
+        }
     }
+    Vec::new()
 }
 
 unsafe fn link<'a>(node: *mut Node, height: u32, width: u32, nodes: &mut Vec<Node>) -> *mut Node<'a> {
