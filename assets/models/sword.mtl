@@ -1,5 +1,5 @@
-# Blender MTL File: 'None'
-# Material Count: 6
+# Blender MTL File: 'sword.blend'
+# Material Count: 5
 
 newmtl Material.007
 Ns 92.156863
@@ -10,6 +10,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
+map_Kd /Users/ls_library_1/Documents/GitHub/luminite/assets/textures/sword.png
 
 newmtl Material.008
 Ns 92.156863
@@ -20,16 +21,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-
-newmtl Material.009
-Ns 92.156863
-Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
+map_Kd /Users/ls_library_1/Documents/GitHub/luminite/assets/textures/sword.png
 
 newmtl Material.010
 Ns 92.156863
@@ -40,6 +32,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
+map_Kd /Users/ls_library_1/Documents/GitHub/luminite/assets/textures/sword.png
 
 newmtl Material.011
 Ns 92.156863
@@ -50,6 +43,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
+map_Kd /Users/ls_library_1/Documents/GitHub/luminite/assets/textures/sword.png
 
 newmtl Material.012
 Ns 92.156863
@@ -60,3 +54,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
+map_Kd /Users/ls_library_1/Documents/GitHub/luminite/assets/textures/sword.png
