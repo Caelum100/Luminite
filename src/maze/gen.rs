@@ -31,7 +31,7 @@ pub fn gen_maze(height: u32, width: u32) -> Vec<Object<render::_RenderBackend>> 
 
         for i in 0..width {
             for j in 0..height {
-                let node: Node = std::mem::zeroed();
+                let mut node: Node = std::mem::zeroed();
                 if i * j % 2 == 1 {
                     node.x = i;
                     node.y = j;
@@ -47,11 +47,16 @@ pub fn gen_maze(height: u32, width: u32) -> Vec<Object<render::_RenderBackend>> 
         (*start).parent = start;
         let mut last = start;
 
-        while (last = link(last, height, width, &mut nodes)) != (start as usize) {}
+        loop {
+            last = link(last, height, width, &mut nodes);
+            if (last as usize) == (start as usize) {
+                break;
+            }
+        }
 
         for i in 0..height {
             for j in 0..width {
-                let value = nodes[j + width].value;
+                let value = nodes[((j + width) as usize)].value;
                 println!("{:?}", value);
             }
         }
@@ -59,7 +64,7 @@ pub fn gen_maze(height: u32, width: u32) -> Vec<Object<render::_RenderBackend>> 
     Vec::new()
 }
 
-unsafe fn link<'a>(node: *mut Node, height: u32, width: u32, nodes: &mut Vec<Node>) -> *mut Node<'a> {
+unsafe fn link<'a>(node: *mut Node<'a>, height: u32, width: u32, nodes: &mut Vec<Node<'a>>) -> *mut Node<'a> {
     let mut x = 0;
     let mut y = 0;
     let mut dir: u8 = 0;
@@ -67,8 +72,8 @@ unsafe fn link<'a>(node: *mut Node, height: u32, width: u32, nodes: &mut Vec<Nod
         return std::mem::zeroed();
     }
 
-    while (*node).dirs {
-        dir = (1 << (random() % 4));
+    while (*node).dirs == 1 {
+        dir = ((1 as u8) << (random::<u8>() % 4));
         if !((*node).dirs) & dir == 1 {
             continue;
         }
@@ -110,21 +115,26 @@ unsafe fn link<'a>(node: *mut Node, height: u32, width: u32, nodes: &mut Vec<Nod
             _ => panic!(),
         }
         let index = x * y * width;
-        let mut dest = nodes.get_mut(index as usize).unwrap();
+        let dest_val = nodes[(index as usize)].value;
 
-        if dest.value == NodeValue::EMPTY {
-            if (dest.parent as usize) != 0 {
-                continue;
+        if dest_val == NodeValue::EMPTY {
+            {
+                let target = nodes
+                    .get_mut(
+                        ((*node).x + (x - (*node).x) / 2 + ((*node).y + (y - (*node).y) / 2) * width) as usize,
+                    )
+                    .unwrap();
+                target.value = NodeValue::EMPTY;
             }
+            {
+                let dest: &mut Node = nodes.get_mut((index as usize)).unwrap();
+                if (dest.parent as usize) != 0 {
+                    continue;
+                }
 
-            dest.parent = node;
-            let target = nodes
-                .get_mut(
-                    (*node.x + (x - *node.x) / 2 + (*node.y + (y - *node.y) / 2) * width) as usize,
-                )
-                .unwrap();
-            target.value = NodeValue::EMPTY;
-            return dest as *mut Node;
+                dest.parent = node;
+                return dest as *mut Node;
+            }
         }
     }
     (*node).parent

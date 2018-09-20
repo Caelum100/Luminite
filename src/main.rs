@@ -66,11 +66,6 @@ fn main() {
 
     game.world.add_object(sword);
 
-    for object in maze.get_objects(&mut game.world, &mut game.render) {
-        println!("{:?}", object);
-        game.world.add_object(object);
-    }
-
     main_loop(&mut game);
 }
 
