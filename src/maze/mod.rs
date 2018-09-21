@@ -42,6 +42,14 @@ pub struct Maze {
 }
 
 impl Maze {
+    pub fn new(height: u32, width: u32) -> Self {
+        Self {
+            height,
+            width,
+            horizontal_walls: vec![0; (height * width / 8) as usize],
+            vertical_walls: vec![0; (height * width / 8) as usize],
+        }
+    }
     pub fn height(&self) -> u32 {
         self.height
     }
