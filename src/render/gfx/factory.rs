@@ -262,13 +262,13 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             let vs_entry = EntryPoint::<back::Backend> {
                 entry: "main",
                 module: &vertex_shader_mod,
-                specialization: &[],
+                specialization: Default::default(),
             };
 
             let fs_entry = EntryPoint::<back::Backend> {
                 entry: "main",
                 module: &fragment_shader_mod,
-                specialization: &[],
+                specialization: Default::default(),
             };
 
             let shader_entries = GraphicsShaderSet {
