@@ -5,6 +5,7 @@ extern crate rand;
 extern crate simple_logger;
 extern crate tobj;
 extern crate winit;
+extern crate petgraph;
 
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;

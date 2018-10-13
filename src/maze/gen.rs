@@ -1,65 +1,64 @@
 //! This module implements the pseudo-random generation
 //! of mazes using the depth-first search algorithm.
+//!
+//! The maze is stored as an undirected
+//! connected graph with the cells representing spaces
+//! in the maze and the edges representing walls between
+//! two cells.
 use super::*;
 use rand;
 use self::rand::Rng;
 use self::rand::random;
 use std::collections::HashMap;
 use std::ops::Add;
+use petgraph::*;
+use petgraph::graph::NodeIndex;
 
 struct Ctx {
-    maze: Maze,
-    stack: Vec<Pos>,
-    pos: Pos,
+    maze: Graph<Cell, u32, Undirected>,
+    stack: Vec<u32>,
+    pos: u32,
 }
 
 #[derive(Clone, Copy, Debug, Hash)]
-struct Pos {
-    x: usize,
-    y: usize,
-}
-
-// Y=Odd number: horizontal, even: vertical
-// Y values will range from 0 to height * 2 - 1,
-// while X values will range from 0 to width
-impl Pos {
-    pub fn new(x: usize, y: usize) -> Self {
-        Self {
-            x,
-            y,
-        }
-    }
+struct Cell {
+    visited: bool,
 }
 
 pub fn gen_maze(width: usize, height: usize) {
     let mut ctx = Ctx {
-        maze: Maze::new(height as u32, width as u32),
+        maze: Graph::new_undirected(),
         stack: Vec::new(),
-        pos: Pos::new(0, 0),
+        pos: 0,
     };
 
-    let mut finished = false;
+    fill_graph(&mut ctx.maze, width, height);
+
+    let mut running = true;
     loop {
+        ctx.maze.find
 
-
-        // Push to stack
-        ctx.stack.push(ctx.pos);
-        move_pos(&mut ctx);
-        if finished {
+        if !running {
             break;
         }
     }
 }
 
-fn move_pos(ctx: &mut Ctx) {
-    // Move position randomly
-    let incr: i32 = {
-        if random() { 1 }
-            else { -1 }
-    };
-    if random() {
-        ctx.pos.x = ((ctx.pos.x as i32) + incr) as usize;
-    } else {
-        ctx.pos.y = ((ctx.pos.y as i32) + incr) as usize;
+fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usize) {
+    for w in 0..width {
+        for h in 0..height {
+            maze.add_node(Cell {
+                visited: false
+            });
+        }
+    }
+    // Connect all cells with walls
+    for w in 0..width {
+        for h in 0..height {
+            let index_num = w * height + h;
+            let index = NodeIndex::new(index_num);
+
+            // TODO finish
+        }
     }
 }
