@@ -262,13 +262,19 @@ impl<'a> RenderBuilder<'a, back::Backend> {
             let vs_entry = EntryPoint::<back::Backend> {
                 entry: "main",
                 module: &vertex_shader_mod,
-                specialization: &[],
+                specialization: Specialization {
+                    constants: &[],
+                    data: &[],
+                },
             };
 
             let fs_entry = EntryPoint::<back::Backend> {
                 entry: "main",
                 module: &fragment_shader_mod,
-                specialization: &[],
+                specialization: Specialization {
+                    constants: &[],
+                    data: &[],
+                },
             };
 
             let shader_entries = GraphicsShaderSet {
@@ -360,7 +366,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                     depth_format,
                     image::Tiling::Optimal,
                     image::Usage::DEPTH_STENCIL_ATTACHMENT,
-                    image::StorageFlags::empty(),
+                    image::ViewCapabilities::empty(),
                 )
                 .unwrap();
 
