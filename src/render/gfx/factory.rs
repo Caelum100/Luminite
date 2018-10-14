@@ -282,6 +282,7 @@ impl<'a> RenderBuilder<'a, back::Backend> {
                 hull: None,
                 domain: None,
                 geometry: None,
+                println!("");
                 fragment: Some(fs_entry),
             };
 

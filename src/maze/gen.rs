@@ -17,7 +17,7 @@ use petgraph::graph::NodeIndex;
 
 struct Ctx {
     maze: Graph<Cell, u32, Undirected>,
-    stack: Vec<u32>,
+    stack: Vec<usize>,
     pos: usize,
 }
 
@@ -35,19 +35,28 @@ pub fn gen_maze(width: usize, height: usize) {
 
     fill_graph(&mut ctx.maze, width, height);
 
-    let mut running = true;
     loop {
         let index = NodeIndex::new(ctx.pos);
         {
             let cell = ctx.maze.index_mut(index);
             cell.visited = true;
         }
+        if !check_edges(&mut ctx.maze, ctx.pos) {
+            // Backtrace or finish
+            if ctx.pos == 0 {
+                break;
+            }
 
-
-
-        if !running {
-            break;
+            ctx.pos = ctx.stack.pop().unwrap();
+            continue;
         }
+
+        ctx.stack.push(ctx.pos);
+        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos);
+        let num = rand::thread_rng().gen_range(0, adjacents.count());
+        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).enumerate().collect();
+        let next_cell = adjacents[num];
+        
     }
 }
 
@@ -85,8 +94,12 @@ fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usi
     }
 }
 
+fn find_neighbors(maze: &mut Graph<Cell, u32, Undirected>, pos: usize) -> ::petgraph::graph::Neighbors<u32> {
+    maze.neighbors_undirected(NodeIndex::new(pos))
+}
+
 fn check_edges(maze: &mut Graph<Cell, u32, Undirected>, pos: usize) -> bool {
-    // Return false if there are no unvisited adjacent cells
-    // TODO
-    true
+    // Return if there are available adjacent cells
+    let neighbors = find_neighbors(maze, pos);
+    neighbors.count() > 0
 }

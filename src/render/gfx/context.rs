@@ -34,7 +34,57 @@ pub struct RenderContext<B: Backend> {
     pub window: winit::Window,
     /// The surface for rendering to
     pub surface: B::Surface,
-    /// The command queue group for submitting commands to the GPU
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     pub queue_group: QueueGroup<B, Graphics>,
     /// The command pool for submitting commands to the GPU
     pub command_pool: CommandPool<B, Graphics>,
