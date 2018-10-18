@@ -1,0 +1,8 @@
+{
+  "name": "wall",
+  "model": {
+    "single": true
+  },
+
+  "rigging": []
+}
