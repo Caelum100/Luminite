@@ -43,7 +43,7 @@ pub fn gen_maze(width: usize, height: usize) {
             cell.visited = true;
         }
 
-
+        
 
         if !running {
             break;
