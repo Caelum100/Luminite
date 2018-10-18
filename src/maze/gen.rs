@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use std::ops::Add;
 use petgraph::*;
 use petgraph::graph::NodeIndex;
+use render::_RenderBackend;
 
 struct Ctx {
     maze: Graph<Cell, u32, Undirected>,
@@ -23,10 +24,10 @@ struct Ctx {
 
 #[derive(Clone, Copy, Debug, Hash)]
 struct Cell {
-    visited: bool,
+
 }
 
-pub fn gen_maze(width: usize, height: usize) {
+pub fn gen_maze(width: usize, height: usize) -> Vec<Object<_RenderBackend>> {
     let mut ctx = Ctx {
         maze: Graph::new_undirected(),
         stack: Vec::new(),
@@ -39,7 +40,6 @@ pub fn gen_maze(width: usize, height: usize) {
         let index = NodeIndex::new(ctx.pos);
         {
             let cell = ctx.maze.index_mut(index);
-            cell.visited = true;
         }
         if !check_edges(&mut ctx.maze, ctx.pos) {
             // Backtrace or finish
@@ -54,9 +54,12 @@ pub fn gen_maze(width: usize, height: usize) {
         ctx.stack.push(ctx.pos);
         let adjacents = find_neighbors(&mut ctx.maze, ctx.pos);
         let num = rand::thread_rng().gen_range(0, adjacents.count());
-        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).enumerate().collect();
-        let next_cell = adjacents[num];
+        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).collect_vec();
+        let cell = adjacents[num];
+        ctx.pos = cell.index();
+
     }
+    Vec::new() // TODO
 }
 
 fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usize) {
