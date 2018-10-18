@@ -1,0 +1,30 @@
+{
+  "name": "human",
+  "model": {
+    "single": false,
+    "parts": [
+      "head",
+      "neck",
+      "torso",
+      "legs",
+      "arms"
+    ]
+  },
+  "rigging": [
+      {
+        "part": "head",
+        "turn": {
+        "type": "rotate",
+        "point": {
+          "x": 0,
+          "y": 167.666,
+          "z": 0
+        },
+        "axis": [
+          "y"
+        ]
+      }
+    }
+    // TODO rig arms/legs/etc.
+  ]
+}
