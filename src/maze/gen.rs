@@ -56,7 +56,7 @@ pub fn gen_maze(width: usize, height: usize) {
         let num = rand::thread_rng().gen_range(0, adjacents.count());
         let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).enumerate().collect();
         let next_cell = adjacents[num];
-        
+
     }
 }
 
