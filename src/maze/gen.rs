@@ -24,7 +24,9 @@ struct Ctx {
 }
 
 #[derive(Clone, Copy, Debug, Hash)]
-struct Cell {}
+struct Cell {
+    visited: bool,
+}
 
 pub fn gen_maze<B: RenderBackend>(
     width: usize,
@@ -52,7 +54,7 @@ pub fn gen_maze<B: RenderBackend>(
         }
 
         ctx.stack.push(ctx.pos);
-        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).collect::<Vec<_>>();
+        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos);
         let num = rand::thread_rng().gen_range(0, adjacents.len());
         let cell = adjacents[num];
 
@@ -77,6 +79,10 @@ fn compute_objects<B: RenderBackend>(
     height: usize,
     render: &mut B::RenderContext,
 ) -> Vec<Object<B>> {
+    // Reset visited values so that `find_neighbors` will work
+    for node in ctx.maze.node_weights_mut() {
+        node.visited = false;
+    }
     let mut result = Vec::new();
     // Follow the path
     loop {
@@ -99,7 +105,7 @@ fn compute_objects<B: RenderBackend>(
 
             }
         }
-        if find_neighbors(&mut ctx.maze, cell.index()).count() == 0 {
+        if find_neighbors(&mut ctx.maze, cell.index()).len() == 0 {
             break;
         }
     }
@@ -109,7 +115,9 @@ fn compute_objects<B: RenderBackend>(
 fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usize) {
     for h in 0..height {
         for w in 0..width {
-            maze.add_node(Cell {});
+            maze.add_node(Cell {
+                visited: false,
+            });
         }
     }
     // Connect all cells with walls
@@ -141,12 +149,19 @@ fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usi
 fn find_neighbors(
     maze: &mut Graph<Cell, u32, Undirected>,
     pos: usize,
-) -> ::petgraph::graph::Neighbors<u32> {
-    maze.neighbors_undirected(NodeIndex::new(pos))
+) -> Vec<NodeIndex<u32>> {
+    let neighbors = maze.neighbors_undirected(NodeIndex::new(pos)).collect::<Vec<_>>();
+    let mut result = Vec::new();
+    for neighbor in neighbors {
+        if !maze.node_weight(neighbor).unwrap().visited {
+            result.push(neighbor);
+        }
+    }
+    result
 }
 
 fn check_edges(maze: &mut Graph<Cell, u32, Undirected>, pos: usize) -> bool {
     // Return if there are available adjacent cells
     let neighbors = find_neighbors(maze, pos);
-    neighbors.count() > 0
+    neighbors.len() > 0
 }
