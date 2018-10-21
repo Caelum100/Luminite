@@ -5,35 +5,38 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
 
+static mut OBJECT_GLOBAL_ID: u64 = 0;
+
 pub struct World<B: RenderBackend> {
-    objects: HashMap<u32, Object<B>>,
-    object_id_counter: u32,
+    objects: HashMap<u64, Object<B>>,
 }
 
 impl<B: RenderBackend> World<B> {
     pub fn add_obj(&mut self, object: Object<B>) {
-        self.objects.insert(self.alloc_obj_id(), object);
+        let id = object.global_id;
+        self.objects.insert(id, object);
     }
 
     pub fn add_objs(&mut self, objects: Vec<Object<B>>) {
         for obj in objects {
-            self.objects.insert(self.alloc_obj_id(), obj);
+            let id = obj.global_id;
+            self.objects.insert(id, obj);
         }
     }
 
-    pub fn get_objs<'a>(&'a self) -> &'a HashMap<u32, Object<B>> {
+    pub fn get_objs<'a>(&'a self) -> &'a HashMap<u64, Object<B>> {
         &self.objects
     }
 
-    pub fn get_objs_mut<'a>(&'a mut self) -> &'a mut HashMap<u32, Object<B>> {
+    pub fn get_objs_mut<'a>(&'a mut self) -> &'a mut HashMap<u64, Object<B>> {
         &mut self.objects
     }
 
-    pub fn get_obj(&mut self, id: u32) -> Option<&Object<B>> {
+    pub fn get_obj(&mut self, id: u64) -> Option<&Object<B>> {
         self.objects.get(&id)
     }
 
-    pub fn remove_obj(&mut self, id: u32) -> Option<Object<B>> {
+    pub fn remove_obj(&mut self, id: u64) -> Option<Object<B>> {
         self.objects.remove(&id)
     }
 
@@ -41,14 +44,7 @@ impl<B: RenderBackend> World<B> {
     pub fn new() -> World<B> {
         World {
             objects: HashMap::new(),
-            object_id_counter: 0,
         }
-    }
-
-    fn alloc_obj_id(&mut self) -> u32 {
-        let result = self.object_id_counter;
-        self.object_id_counter += 1;
-        result
     }
 
     pub fn tick(&mut self) {
@@ -60,6 +56,9 @@ impl<B: RenderBackend> World<B> {
 
 /// An object in the world
 pub struct Object<B: RenderBackend> {
+    /// The GLOBAL ID for the object. This
+    /// is used for things like hashing and equal.
+    pub global_id: u64,
     /// The location in world space of the object
     pub location: Location,
     /// The render data associated with this object
@@ -78,13 +77,13 @@ impl<B: RenderBackend> std::fmt::Debug for Object<B> {
 
 impl<B: RenderBackend> Hash for Object<B> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_u32(self.id);
+        state.write_u64(self.global_id);
     }
 }
 
 impl<B: RenderBackend> PartialEq for Object<B> {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
+        self.global_id == other.global_id
     }
 }
 
@@ -92,7 +91,10 @@ impl<B: RenderBackend> Eq for Object<B> {}
 
 impl<B: RenderBackend> Object<B> {
     pub fn new(render: B::ObjectRender, location: Location) -> Object<B> {
-        Object { render, location }
+        Object { render, location, global_id: unsafe {
+            OBJECT_GLOBAL_ID += 1;
+            OBJECT_GLOBAL_ID
+        } }
     }
 }
 

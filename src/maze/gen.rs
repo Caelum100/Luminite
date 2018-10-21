@@ -15,6 +15,7 @@ use render::_RenderBackend;
 use std::collections::HashMap;
 use std::ops::Add;
 use std::ops::IndexMut;
+use render::RenderContext;
 
 struct Ctx {
     maze: Graph<Cell, u32, Undirected>,
@@ -29,7 +30,7 @@ pub fn gen_maze<B: RenderBackend>(
     width: usize,
     height: usize,
     render: &mut B::RenderContext,
-) -> Vec<Object<_RenderBackend>> {
+) -> Vec<Object<B>> {
     let mut ctx = Ctx {
         maze: Graph::new_undirected(),
         stack: Vec::new(),
@@ -51,21 +52,21 @@ pub fn gen_maze<B: RenderBackend>(
         }
 
         ctx.stack.push(ctx.pos);
-        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos);
-        let num = rand::thread_rng().gen_range(0, adjacents.count());
-        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).collect_vec();
+        let adjacents = find_neighbors(&mut ctx.maze, ctx.pos).collect::<Vec<_>>();
+        let num = rand::thread_rng().gen_range(0, adjacents.len());
         let cell = adjacents[num];
 
         // Delete edge between
+        let edge = ctx.maze
+            .find_edge(index, NodeIndex::new(cell.index()))
+            .unwrap();
         ctx.maze.remove_edge(
-            ctx.maze
-                .find_edge(index, NodeIndex::new(cell.index))
-                .unwrap(),
+            edge
         );
 
         ctx.pos = cell.index();
     }
-    compute_objects(&mut ctx, width, height)
+    compute_objects(&mut ctx, width, height, render)
 }
 
 /// Turns the graph into a vector of wall objects
@@ -77,12 +78,29 @@ fn compute_objects<B: RenderBackend>(
     render: &mut B::RenderContext,
 ) -> Vec<Object<B>> {
     let mut result = Vec::new();
-    for h in 0..height {
-        for w in 0..width {
-            result.push(Object::new(
-                render::_create_obj_render(2, 0, render),
-                Location::new((h * 16) as f64, 0.0, (w * 16) as f64),
-            ));
+    // Follow the path
+    loop {
+        let cell: NodeIndex<u32> = NodeIndex::new(0);
+        for adjacent in find_neighbors(&mut ctx.maze, cell.index()) {
+            // If adjacent - cell > 1 or < -1, the wall alignment is
+            // vertical; otherwise, it is horizontal.
+            if (adjacent.index() as i64) - (cell.index() as i64) > 1 || (adjacent.index() as i64) - (cell.index() as i64) < -1 {
+                // Vertical wall; don't rotate
+                result.push(
+                    Object::new(
+                        B::create_obj_render(2, 0, render),
+                        Location::new(
+                            (cell.index() - (height * cell.index() / width)) as f64,
+                            0.0,
+                            (cell.index() - (width * cell.index() / width)) as f64,
+                        )
+                    )
+                );
+
+            }
+        }
+        if find_neighbors(&mut ctx.maze, cell.index()).count() == 0 {
+            break;
         }
     }
     result

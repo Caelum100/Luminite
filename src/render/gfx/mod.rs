@@ -1,7 +1,5 @@
 //! gfx-rs render backend
 //! for Luminite
-
-use self::context::RenderContext;
 use self::factory::RenderBuilder;
 use super::back;
 use super::winit;
@@ -32,7 +30,7 @@ use gfx_hal::{
 };
 
 use self::asset_load::upload_model;
-pub use self::context::{BufferMem, UniformBuffer};
+pub use self::context::{BufferMem, UniformBuffer, RenderContext};
 use gfx_hal::IndexType;
 use std::borrow::Borrow;
 
