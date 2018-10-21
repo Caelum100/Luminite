@@ -116,26 +116,6 @@ impl Maze {
     ) -> Vec<Object<B>> {
         let mut result = Vec::new();
 
-        for x in 0..self.width {
-            for y in 0..self.height {
-                if self.has_wall_at(x, y, WallDir::VERTICAL) {
-                    result.push(Object::new(
-                        world,
-                        B::create_obj_render(2, 0, render),
-                        Location::new((x as f64) * 16.0 + 8.0, 0.0, (y as f64) * 16.0 + 8.0),
-                    ));
-                }
-                if self.has_wall_at(x, y, WallDir::HORIZONTAL) {
-                    result.push(Object::new(
-                        world,
-                        B::create_obj_render(2, 0, render),
-                        Location::new((x as f64) * 16.0 + 8.0, 0.0, (y as f64) * 16.0 + 8.0)
-                            .with_rot(0.0, 180.0),
-                    ));
-                }
-            }
-        }
-
         result
     }
 }

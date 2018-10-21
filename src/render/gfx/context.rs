@@ -35,56 +35,6 @@ pub struct RenderContext<B: Backend> {
     /// The surface for rendering to
     pub surface: B::Surface,
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     pub queue_group: QueueGroup<B, Graphics>,
     /// The command pool for submitting commands to the GPU
     pub command_pool: CommandPool<B, Graphics>,

@@ -11,8 +11,14 @@ pub struct World<B: RenderBackend> {
 }
 
 impl<B: RenderBackend> World<B> {
-    pub fn add_object(&mut self, object: Object<B>) {
-        self.objects.insert(object.id, object);
+    pub fn add_obj(&mut self, object: Object<B>) {
+        self.objects.insert(self.alloc_obj_id(), object);
+    }
+
+    pub fn add_objs(&mut self, objects: Vec<Object<B>>) {
+        for obj in objects {
+            self.objects.insert(self.alloc_obj_id(), obj);
+        }
     }
 
     pub fn get_objs<'a>(&'a self) -> &'a HashMap<u32, Object<B>> {
@@ -39,7 +45,7 @@ impl<B: RenderBackend> World<B> {
         }
     }
 
-    pub fn alloc_obj_id(&mut self) -> u32 {
+    fn alloc_obj_id(&mut self) -> u32 {
         let result = self.object_id_counter;
         self.object_id_counter += 1;
         result
@@ -54,12 +60,13 @@ impl<B: RenderBackend> World<B> {
 
 /// An object in the world
 pub struct Object<B: RenderBackend> {
-    /// Unique object ID
-    pub id: u32,
     /// The location in world space of the object
     pub location: Location,
     /// The render data associated with this object
     pub render: B::ObjectRender,
+    // The descriptor for the object - this is loaded from
+    // JSON files in assets/objects
+    // TODO
 }
 
 impl<B: RenderBackend> std::fmt::Debug for Object<B> {
@@ -84,12 +91,8 @@ impl<B: RenderBackend> PartialEq for Object<B> {
 impl<B: RenderBackend> Eq for Object<B> {}
 
 impl<B: RenderBackend> Object<B> {
-    pub fn new(world: &mut World<B>, render: B::ObjectRender, location: Location) -> Object<B> {
-        Object {
-            id: world.alloc_obj_id(),
-            render,
-            location,
-        }
+    pub fn new(render: B::ObjectRender, location: Location) -> Object<B> {
+        Object { render, location }
     }
 }
 

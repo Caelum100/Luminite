@@ -25,7 +25,7 @@ use gfx_hal::{
     },
     pso::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
-        PipelineStage, Rasterizer, Rect, Viewport, Specialization,
+        PipelineStage, Rasterizer, Rect, Specialization, Viewport,
     },
     Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, MemoryType, Primitive,
     QueueGroup, Submission, SwapImageIndex, Swapchain, SwapchainConfig,
