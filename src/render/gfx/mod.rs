@@ -1,7 +1,5 @@
 //! gfx-rs render backend
 //! for Luminite
-
-use self::context::RenderContext;
 use self::factory::RenderBuilder;
 use super::back;
 use super::winit;
@@ -25,14 +23,14 @@ use gfx_hal::{
     },
     pso::{
         BlendState, ColorBlendDesc, ColorMask, EntryPoint, GraphicsPipelineDesc, GraphicsShaderSet,
-        PipelineStage, Rasterizer, Rect, Viewport, Specialization,
+        PipelineStage, Rasterizer, Rect, Specialization, Viewport,
     },
     Backbuffer, Backend, DescriptorPool, Device, FrameSync, Graphics, MemoryType, Primitive,
     QueueGroup, Submission, SwapImageIndex, Swapchain, SwapchainConfig,
 };
 
 use self::asset_load::upload_model;
-pub use self::context::{BufferMem, UniformBuffer};
+pub use self::context::{BufferMem, UniformBuffer, RenderContext};
 use gfx_hal::IndexType;
 use std::borrow::Borrow;
 

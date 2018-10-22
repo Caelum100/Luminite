@@ -1,11 +1,11 @@
 extern crate glm;
 extern crate log;
 extern crate num;
+extern crate petgraph;
 extern crate rand;
 extern crate simple_logger;
 extern crate tobj;
 extern crate winit;
-extern crate petgraph;
 
 #[cfg(feature = "dx12")]
 extern crate gfx_backend_dx12 as back;
@@ -50,7 +50,7 @@ fn main() {
         start_time: SystemTime::now(),
     };
 
-    let cube = Object::new(
+    /*let cube = Object::new(
         &mut game.world,
         _RenderBackend::create_obj_render(0, 0, &mut game.render),
         Location::new(0.0, 0.0, 0.0),
@@ -64,7 +64,9 @@ fn main() {
         Location::new(0.0, -1.0, 2.0).with_rot(45.0, -90.0),
     );
 
-    game.world.add_object(sword);
+    game.world.add_object(sword);*/
+
+    game.world.add_objs(maze::gen::gen_maze(64, 64, &mut game.render));
 
     main_loop(&mut game);
 }
