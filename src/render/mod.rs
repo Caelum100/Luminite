@@ -68,8 +68,8 @@ fn mvp_matrix<B: RenderBackend>(object: &Object<B>) -> (Mat4, Mat4) {
 
     // TODO moving camera
     let view = look_at(
-        vec3(128.0, 64.0, 0.0),
-        vec3(128.0, 0.0, 128.0),
+        vec3(128.0, 32.0, 128.0),
+        vec3(0.0, 0.0, 0.0),
         vec3(0.0, 1.0, 0.0),
     );
 

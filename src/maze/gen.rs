@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use std::ops::Add;
 use std::ops::IndexMut;
 use render::RenderContext;
+use std::collections::HashSet;
 
 struct Ctx {
     maze: Graph<Cell, u32, Undirected>,
@@ -43,6 +44,10 @@ pub fn gen_maze<B: RenderBackend>(
 
     loop {
         let index = NodeIndex::new(ctx.pos);
+        {
+            let weight = ctx.maze.node_weight_mut(index).unwrap();
+            weight.visited = true;
+        }
         if !check_edges(&mut ctx.maze, ctx.pos) {
             // Backtrace or finish
             if ctx.pos == 0 {
@@ -84,31 +89,33 @@ fn compute_objects<B: RenderBackend>(
         node.visited = false;
     }
     let mut result = Vec::new();
-    // Follow the path
-    loop {
-        let cell: NodeIndex<u32> = NodeIndex::new(0);
-        for adjacent in find_neighbors(&mut ctx.maze, cell.index()) {
-            // If adjacent - cell > 1 or < -1, the wall alignment is
-            // vertical; otherwise, it is horizontal.
-            if (adjacent.index() as i64) - (cell.index() as i64) > 1 || (adjacent.index() as i64) - (cell.index() as i64) < -1 {
-                // Vertical wall; don't rotate
-                result.push(
-                    Object::new(
-                        B::create_obj_render(2, 0, render),
-                        Location::new(
-                            (cell.index() - (height * cell.index() / width)) as f64,
-                            0.0,
-                            (cell.index() - (width * cell.index() / width)) as f64,
-                        )
-                    )
-                );
 
-            }
+    for edge in ctx.maze.edge_indices() {
+        let (a, b) = ctx.maze.edge_endpoints(edge).unwrap();
+        let mut edge_loc = Location::new(
+            ((a.index() / width) as f64) * 16.0,
+            0.0,
+            ((a.index() % height) as f64) * 16.0,
+        );
+
+        let diff = (a.index() as i64) - (b.index() as i64);
+        if diff > 1 || diff < -1 {
+            // Wall should be horizontal - don't modify rotation
+            // Do nothing
         }
-        if find_neighbors(&mut ctx.maze, cell.index()).len() == 0 {
-            break;
+        else {
+            // Vertical wall - rotate 90 degrees
+            edge_loc = edge_loc.with_rot(0.0, 90.0);
         }
+
+        result.push(
+            Object::new(
+                B::create_obj_render(2, 0, render),
+                edge_loc,
+            )
+        );
     }
+
     result
 }
 
