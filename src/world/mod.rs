@@ -91,10 +91,14 @@ impl<B: RenderBackend> Eq for Object<B> {}
 
 impl<B: RenderBackend> Object<B> {
     pub fn new(render: B::ObjectRender, location: Location) -> Object<B> {
-        Object { render, location, global_id: unsafe {
-            OBJECT_GLOBAL_ID += 1;
-            OBJECT_GLOBAL_ID
-        } }
+        Object {
+            render,
+            location,
+            global_id: unsafe {
+                OBJECT_GLOBAL_ID += 1;
+                OBJECT_GLOBAL_ID
+            },
+        }
     }
 }
 

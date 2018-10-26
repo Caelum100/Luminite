@@ -11,12 +11,12 @@ use super::*;
 use petgraph::graph::NodeIndex;
 use petgraph::*;
 use rand;
+use render::RenderContext;
 use render::_RenderBackend;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::ops::Add;
 use std::ops::IndexMut;
-use render::RenderContext;
-use std::collections::HashSet;
 
 struct Ctx {
     maze: Graph<Cell, u32, Undirected>,
@@ -64,12 +64,11 @@ pub fn gen_maze<B: RenderBackend>(
         let cell = adjacents[num];
 
         // Delete edge between
-        let edge = ctx.maze
+        let edge = ctx
+            .maze
             .find_edge(index, NodeIndex::new(cell.index()))
             .unwrap();
-        ctx.maze.remove_edge(
-            edge
-        );
+        ctx.maze.remove_edge(edge);
 
         ctx.pos = cell.index();
     }
@@ -102,18 +101,12 @@ fn compute_objects<B: RenderBackend>(
         if diff > 1 || diff < -1 {
             // Wall should be horizontal - don't modify rotation
             // Do nothing
-        }
-        else {
+        } else {
             // Vertical wall - rotate 90 degrees
             edge_loc = edge_loc.with_rot(0.0, 90.0);
         }
 
-        result.push(
-            Object::new(
-                B::create_obj_render(2, 0, render),
-                edge_loc,
-            )
-        );
+        result.push(Object::new(B::create_obj_render(2, 0, render), edge_loc));
     }
 
     result
@@ -122,9 +115,7 @@ fn compute_objects<B: RenderBackend>(
 fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usize) {
     for h in 0..height {
         for w in 0..width {
-            maze.add_node(Cell {
-                visited: false,
-            });
+            maze.add_node(Cell { visited: false });
         }
     }
     // Connect all cells with walls
@@ -135,29 +126,28 @@ fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usi
 
             // Above
             if h > 0 {
-                maze.add_edge(index, NodeIndex::new(index_num - width), 0);
+                maze.update_edge(index, NodeIndex::new(index_num - width), 0);
             }
             // Right
             if w < width - 1 {
-                maze.add_edge(index, NodeIndex::new(index_num + 1), 0);
+                maze.update_edge(index, NodeIndex::new(index_num + 1), 0);
             }
             // Below
             if h < height - 1 {
-                maze.add_edge(index, NodeIndex::new(index_num + width), 0);
+                maze.update_edge(index, NodeIndex::new(index_num + width), 0);
             }
             // Left
             if w > 0 {
-                maze.add_edge(index, NodeIndex::new(index_num - 1), 0);
+                maze.update_edge(index, NodeIndex::new(index_num - 1), 0);
             }
         }
     }
 }
 
-fn find_neighbors(
-    maze: &mut Graph<Cell, u32, Undirected>,
-    pos: usize,
-) -> Vec<NodeIndex<u32>> {
-    let neighbors = maze.neighbors_undirected(NodeIndex::new(pos)).collect::<Vec<_>>();
+fn find_neighbors(maze: &mut Graph<Cell, u32, Undirected>, pos: usize) -> Vec<NodeIndex<u32>> {
+    let neighbors = maze
+        .neighbors_undirected(NodeIndex::new(pos))
+        .collect::<Vec<_>>();
     let mut result = Vec::new();
     for neighbor in neighbors {
         if !maze.node_weight(neighbor).unwrap().visited {

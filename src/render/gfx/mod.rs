@@ -30,7 +30,7 @@ use gfx_hal::{
 };
 
 use self::asset_load::upload_model;
-pub use self::context::{BufferMem, UniformBuffer, RenderContext};
+pub use self::context::{BufferMem, RenderContext, UniformBuffer};
 use gfx_hal::IndexType;
 use std::borrow::Borrow;
 

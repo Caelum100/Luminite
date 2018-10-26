@@ -66,7 +66,8 @@ fn main() {
 
     game.world.add_object(sword);*/
 
-    game.world.add_objs(maze::gen::gen_maze(64, 64, &mut game.render));
+    game.world
+        .add_objs(maze::gen::gen_maze(64, 64, &mut game.render));
 
     main_loop(&mut game);
 }
