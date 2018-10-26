@@ -22,7 +22,7 @@ extern crate gfx_hal;
 
 pub use glm::*;
 use std::time::SystemTime;
-use world::{Location, Object, World};
+use world::{Object, World};
 // Trait
 use render::RenderBackend;
 // Type

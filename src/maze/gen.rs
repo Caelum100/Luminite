@@ -5,18 +5,11 @@
 //! connected graph with the cells representing spaces
 //! in the maze and the edges representing walls between
 //! two cells.
-use self::rand::random;
 use self::rand::Rng;
 use super::*;
 use petgraph::graph::NodeIndex;
 use petgraph::*;
 use rand;
-use render::RenderContext;
-use render::_RenderBackend;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::ops::Add;
-use std::ops::IndexMut;
 
 struct Ctx {
     maze: Graph<Cell, u32, Undirected>,
@@ -113,8 +106,8 @@ fn compute_objects<B: RenderBackend>(
 }
 
 fn fill_graph(maze: &mut Graph<Cell, u32, Undirected>, width: usize, height: usize) {
-    for h in 0..height {
-        for w in 0..width {
+    for _ in 0..height {
+        for _ in 0..width {
             maze.add_node(Cell { visited: false });
         }
     }

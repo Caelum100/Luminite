@@ -1,10 +1,9 @@
 //! Module for the creation and manipulation of mazes.
-
-use render;
+//! OUTDATED - this code is no longer used
 use render::RenderBackend;
 use std::fmt::Error;
 use std::fmt::Formatter;
-use world::{Location, Object, World};
+use world::{Location, Object};
 
 pub mod gen;
 
@@ -105,18 +104,6 @@ impl Maze {
         }
 
         old_value
-    }
-
-    /// Turns the walls of this maze into a vector
-    /// of objects.
-    pub fn get_objects<B: RenderBackend>(
-        &self,
-        world: &mut World<B>,
-        render: &mut B::RenderContext,
-    ) -> Vec<Object<B>> {
-        let mut result = Vec::new();
-
-        result
     }
 }
 

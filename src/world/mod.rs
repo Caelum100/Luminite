@@ -47,11 +47,7 @@ impl<B: RenderBackend> World<B> {
         }
     }
 
-    pub fn tick(&mut self) {
-        for object in self.objects.values_mut() {
-            //object.location.yaw += 1.0;
-        }
-    }
+    pub fn tick(&mut self) {}
 }
 
 /// An object in the world
