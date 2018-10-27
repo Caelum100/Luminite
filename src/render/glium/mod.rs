@@ -92,7 +92,6 @@ fn render_obj(ctx: &RenderContext, frame: &mut glium::Frame, object: &Object<_Re
             write: true,
             ..Default::default()
         },
-
         ..Default::default()
     };
     let model = &ctx.models[object.render.model_index];
