@@ -35,7 +35,8 @@ impl RenderBackend for _RenderBackend {
             .with_dimensions(dimensions.into());
         let context = glutin::ContextBuilder::new()
             .with_depth_buffer(24)
-            .with_vsync(true);
+            .with_vsync(true)
+            .with_multisampling(4);
         let display = glium::Display::new(window, context, &events_loop).unwrap();
         let program = compile_program(&display);
 
@@ -91,6 +92,7 @@ fn render_obj(ctx: &RenderContext, frame: &mut glium::Frame, object: &Object<_Re
             write: true,
             ..Default::default()
         },
+
         ..Default::default()
     };
     let model = &ctx.models[object.render.model_index];
